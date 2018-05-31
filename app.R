@@ -30,8 +30,8 @@ pheno$condition <- sapply(strsplit(pheno$object_name, ":"), function(x) {
   }
 })
 
-master <- readRDS("../data/master_table.rds")
-rownames(master) <- master$gene_symbol
+#master <- readRDS("../data/master_table.rds")
+#rownames(master) <- master$gene_symbol
 
 # input <- list()
 # input$gene_symbol <- c("A2ML1", "A2M") #c("ASTN1", "A1CF")
@@ -41,34 +41,6 @@ ui <- fluidPage(
   #theme = shinytheme("cerulean"),
   useShinyjs(),
   titlePanel("WEScover"),
-<<<<<<< HEAD
-  sidebarLayout(
-    sidebarPanel(
-      h2("User input"),
-      selectizeInput("gene_symbol", 
-                  label = "Gene symbol",
-                  choices = gene_symbol,
-                  selected = gene_symbol[1],
-                  multiple = TRUE ),
-      textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
-      selectInput("depth_of_coverage", 
-            label = "Depth of coverage",
-            choices = c("10x", "20x", "30x"),
-            selected = "20x"),
-
-      numericInput("breadth_of_coverage", 
-                   h3("Maximum breadth of coverage"), 
-                   value = 0.95)
-      ),
-    
-    # create div for plot output
-    mainPanel(
-      #plotlyOutput("plot", height = 650),
-      tableOutput("tablePlot"),
-      plotOutput("plot", height = 650),
-      dataTableOutput('tableMain')
-      )
-=======
   fluidRow(
     column(3,
            h2("User input"),
@@ -97,7 +69,6 @@ ui <- fluidPage(
     column(3, 
            plotlyOutput("plot")#, height = 650)
            #plotOutput("plot")
->>>>>>> 99ac29b7f81c20a5582bcdd0af77bd75e6de4cd0
     )
   ),
   hr(),
@@ -121,16 +92,6 @@ server <- function(input, output) {
       shinyjs::enable("phenotype")
     }
   })
-<<<<<<< HEAD
-  # creating the table if <= 9 CCCDS IDs selected
-  output$tablePlot <- renderTable(master[input$gene_symbol,])
-  
-  # creating the main table if more than 9 CCDS are selected
-  output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
-  # rective table for list of GTP
-  gpt_reactive <- reactive({
-    createGPT(input$tableMain_rows_selected, main_table(), gtrM)
-=======
   
   # generator of buttons for the main table
   shinyInput <- function(FUN, len, id, ...) {
@@ -151,9 +112,8 @@ server <- function(input, output) {
     selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
     message(paste('click on detail ', selectedRow))
    
-    myValue$modal_table <<- createGPT(selectedRow, main_table(), gtrM)
+    myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
     showModal(modal_main(1))
->>>>>>> 99ac29b7f81c20a5582bcdd0af77bd75e6de4cd0
   })
   
   # observer to capture GPT buttons in the main table
@@ -162,7 +122,7 @@ server <- function(input, output) {
     message(paste('click on population ', selectedRow))
     geneS <- as.character(main_table()[selectedRow, 1])
     
-    myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
+    myValue$modal_table <<- createGPT(selectedRow, main_table(), gtrM)
     showModal(modal_main(2))
   })
   
