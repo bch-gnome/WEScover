@@ -1,6 +1,8 @@
 getCCDS <- function(geneN, db) {
   message("getCCDS - ", paste(geneN, collapse = ", "))
-  db$ccds_id[db$gene %in% geneN]
+  unlist(lapply(geneN, function(x) {
+    db$ccds_id[db$gene == x]
+  }))
 }
 
 load10x <- function(summary) {
