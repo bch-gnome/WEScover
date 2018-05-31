@@ -1,5 +1,7 @@
 # load packages
 library(shiny)
+library(shinyjs)
+library(shinythemes)
 library(DT)
 library(plotly)
 library(reshape2)
@@ -22,6 +24,8 @@ rownames(gtrS) <- gtrS$ccds_id
 
 # Define UI ----
 ui <- fluidPage(
+  theme = shinytheme("cerulean"),
+  useShinyjs(),
   titlePanel("WEScover"),
   sidebarLayout(
     sidebarPanel(
@@ -79,12 +83,21 @@ server <- function(input, output) {
     showModal(modal_main())
   })
   
-  
+  observeEvent(input$gene_symbol, {
+    selCCDS <- getCCDS(input$gene_symbol, summary)
+    if(length(selCCDS) <= 9) {
+      show("plot")
+      hide("tableMain")
+    } else {
+      hide("plot") 
+      show("tableMain")
+    }
+  })
   
   # create the main plot if less than 9 CCDS are selected
   output$plot <- renderPlot({ #renderPlotly({
     selCCDS <- getCCDS(input$gene_symbol, summary)
-    if(length(selCCDS) >= 9) {
+    if(length(selCCDS) <= 9) {
       message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
       
       idx <- 0 

@@ -225,7 +225,7 @@ createGPT <- function(row, main_table, gtrM) {
 
 createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
   selCCDS <- getCCDS(geneS, summary)
-  if(length(selCCDS) >= 9) {
+  if(length(selCCDS) <= 9) {
     data.frame()
   } else {
     message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
