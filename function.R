@@ -239,7 +239,8 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
         A = GS,
         B = selCCDS,
         C = GPT,
-        D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
+        #D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
+        D = round(MM$GLOBAL * 100, 0),
         E = paste(round(MM$AFR * 100, 0), " (", round(MM$AFR.MI * 100, 0), "-", round(MM$AFR.MA * 100, 0), ")", sep=""),
         F = paste(round(MM$AMR * 100, 0), " (", round(MM$AMR.MI * 100, 0), "-", round(MM$AMR.MA * 100, 0), ")", sep=""),
         G = paste(round(MM$EAS * 100, 0), " (", round(MM$EAS.MI * 100, 0), "-", round(MM$EAS.MA * 100, 0), ")", sep=""),
@@ -248,7 +249,7 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
         stringsAsFactors = FALSE
       )
     }))
-    colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "Global Mean (min-max)", "AFR (min-max)", 
+    colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (min-max)", 
                       "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
     rownames(xx) <- seq(nrow(xx))
     xx

@@ -63,10 +63,10 @@ ui <- fluidPage(
                        choices = c("10x", "20x", "30x"),
                        selected = "20x")
     ),
-    column(6,
+    column(5,
            dataTableOutput('tableMain')  
     ),
-    column(4, 
+    column(5, 
            plotlyOutput("plot")#, height = 650)
            #plotOutput("plot")
     )
@@ -148,17 +148,20 @@ server <- function(input, output) {
     }
     tbl <- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     tbl <- tbl[ , seq(4)]
-    tbl$B1 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See detail", onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
-    tbl$B2 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See GTP", onclick = 'Shiny.onInputChange(\"population_button\",  this.id)' )
-    tbl$B3 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See violin", onclick = 'Shiny.onInputChange(\"violin_button\",  this.id)' )
+    tbl$B1 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "Detail", onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
+    tbl$B2 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "GTR", onclick = 'Shiny.onInputChange(\"population_button\",  this.id)' )
+    tbl$B3 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "Violin", onclick = 'Shiny.onInputChange(\"violin_button\",  this.id)' )
     tbl
   })
   # display reactive main table
-  output$tableMain <- renderDataTable(
-    main_table(),
-    # formatStyle(main_table(), columns = seq(ncol(main_table())),
-    #             backgroundColor="#ee00aa"), 
-    server = FALSE, escape = FALSE, selection = 'none')
+  output$tableMain <- renderDataTable( {
+    #main_table(),
+    #Global Mean (min-max)
+    message(colnames(main_table()))
+    formatStyle(datatable(main_table(), escape = FALSE, selection = 'none'), 
+                columns = "GM", target = 'row', backgroundColor = 
+                  styleInterval(cuts = c(95, 98), values=c("#FFE4E1", "#FFFFE0", "#F0FFF0")))
+    })
   
   # modal dialog box
   modal_main <- function(type, failed = FALSE){
