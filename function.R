@@ -206,10 +206,11 @@ globalMean <- function(idx, ccds, summary) {
 }
 
 
-createGPT <- function(row) {
+createGPT <- function(row, main_table, gtrM) {
   tbl <- data.frame(
     A = main_table[row, 1],
-    B = unique(gtrM[gtrM$GeneSymbol == main_table[row, 1], "AccessionVersion"])
+    B = unique(gtrM[gtrM$GeneSymbol == main_table[row, 1], "AccessionVersion"]),
+    stringsAsFactors = FALSE
   )
   colnames(tbl) <- c("Gene Symbol", "Gene Panel Testing")
   rownames(tbl) <- seq(nrow(tbl))
