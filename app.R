@@ -50,7 +50,7 @@ server <- function(input, output) {
 
     idx <- 0 
     if (input$depth_of_coverage == "10x") {
-      load10x()
+      load10x(summary)
       idx <- 2
       
       dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
@@ -61,7 +61,7 @@ server <- function(input, output) {
     }
     
     if (input$depth_of_coverage == "20x") {
-      load20x()
+      load20x(summary)
       idx <- 3
       dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
                                  melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
@@ -72,7 +72,7 @@ server <- function(input, output) {
     }
     
     if (input$depth_of_coverage == "30x") {
-      load30x()
+      load30x(summary)
       idx <- 4
       dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
                                  melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
