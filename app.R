@@ -42,7 +42,7 @@ ui <- fluidPage(
   useShinyjs(),
   titlePanel("WEScover"),
   fluidRow(
-    column(3,
+    column(2,
            h2("User input"),
            radioButtons("type_input", 
                         label = "Type of input", 
@@ -66,7 +66,7 @@ ui <- fluidPage(
     column(6,
            dataTableOutput('tableMain')  
     ),
-    column(3, 
+    column(4, 
            plotlyOutput("plot")#, height = 650)
            #plotOutput("plot")
     )
@@ -154,7 +154,11 @@ server <- function(input, output) {
     tbl
   })
   # display reactive main table
-  output$tableMain <- renderDataTable(main_table(), server = FALSE, escape = FALSE, selection = 'none')
+  output$tableMain <- renderDataTable(
+    main_table(),
+    # formatStyle(main_table(), columns = seq(ncol(main_table())),
+    #             backgroundColor="#ee00aa"), 
+    server = FALSE, escape = FALSE, selection = 'none')
 
   # modal dialog box
   modal_main <- function(type, failed = FALSE){
