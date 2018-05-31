@@ -8,13 +8,14 @@ library(reshape2)
 source("function.R")
 
 # get data
-
 gene_symbol <- readRDS("../data/gene_symbol.rds")
-gnomad_exome <- readRDS("../data/gnomad_exome.rds")
+#gnomad_exome <- readRDS("../data/gnomad_exome.rds")
+gnomad_exome <- read.delim("gnomad_exome.txt", header = F)
+rownames(gnomad_exome) <- gnomad_exome$V1
 summary <- readRDS("../data/summary.rds")
 
 # input <- list()
-# input$gene_symbol <- c("ASTN1", "A1CF")
+# input$gene_symbol <- "A1BG" #c("ASTN1", "A1CF")
 
 # Define UI ----
 ui <- fluidPage(
