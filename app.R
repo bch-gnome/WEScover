@@ -55,17 +55,11 @@ ui <- fluidPage(
                           label="Phenotype",
                           choices = unique(pheno$condition),
                           multiple = FALSE),
-           #textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
            selectInput("depth_of_coverage", 
                        label = "Depth of coverage",
                        choices = c("10x", "20x", "30x"),
-                       selected = "20x"),
-           
-           numericInput("breadth_of_coverage", 
-                        h3("Maximum breadth of coverage"), 
-                        value = 0.95)
+                       selected = "20x")
     ),
-    hr(),
     column(6,
            dataTableOutput('tableMain')  
     ),
@@ -74,6 +68,7 @@ ui <- fluidPage(
            #plotOutput("plot")
     )
   ),
+  hr(),
   fluidRow(
     column(3),
     column(6),
@@ -123,7 +118,6 @@ server <- function(input, output) {
     selectedRow <- as.numeric(strsplit(input$population_button, "_")[[1]][2])
     message(paste('click on population ', selectedRow))
     geneS <- as.character(main_table()[selectedRow, 1])
-    message('\t', geneS)
     
     myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
     showModal(modal_main(2))
