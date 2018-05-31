@@ -239,12 +239,12 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
         A = GS,
         B = selCCDS,
         C = GPT,
-        D = paste(round(MM$GLOBAL, 3), " (", round(MM$GLOBAL.MI, 3), "-", round(MM$GLOBAL.MA, 3), ")", sep=""),
-        E = paste(round(MM$AFR, 3), " (", round(MM$AFR.MI, 3), "-", round(MM$AFR.MA, 3), ")", sep=""),
-        F = paste(round(MM$AMR, 3), " (", round(MM$AMR.MI, 3), "-", round(MM$AMR.MA, 3), ")", sep=""),
-        G = paste(round(MM$EAS, 3), " (", round(MM$EAS.MI, 3), "-", round(MM$EAS.MA, 3), ")", sep=""),
-        H = paste(round(MM$EUR, 3), " (", round(MM$EUR.MI, 3), "-", round(MM$EUR.MA, 3), ")", sep=""),
-        I = paste(round(MM$SAS, 3), " (", round(MM$SAS.MI, 3), "-", round(MM$SAS.MA, 3), ")", sep=""),
+        D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
+        E = paste(round(MM$AFR * 100, 0), " (", round(MM$AFR.MI * 100, 0), "-", round(MM$AFR.MA * 100, 0), ")", sep=""),
+        F = paste(round(MM$AMR * 100, 0), " (", round(MM$AMR.MI * 100, 0), "-", round(MM$AMR.MA * 100, 0), ")", sep=""),
+        G = paste(round(MM$EAS * 100, 0), " (", round(MM$EAS.MI * 100, 0), "-", round(MM$EAS.MA * 100, 0), ")", sep=""),
+        H = paste(round(MM$EUR * 100, 0), " (", round(MM$EUR.MI * 100, 0), "-", round(MM$EUR.MA * 100, 0), ")", sep=""),
+        I = paste(round(MM$SAS * 100, 0), " (", round(MM$SAS.MI * 100, 0), "-", round(MM$SAS.MA * 100, 0), ")", sep=""),
         stringsAsFactors = FALSE
       )
     }))

@@ -70,8 +70,8 @@ ui <- fluidPage(
            dataTableOutput('tableMain')  
     ),
     column(3, 
-           plotlyOutput("plot", height = 650)
-           #plotOutput("plot", height = 650)
+           plotlyOutput("plot")#, height = 650)
+           #plotOutput("plot")
     )
   ),
   fluidRow(
@@ -132,9 +132,13 @@ server <- function(input, output) {
   # observer to capture violin buttons in the main table
   observeEvent(input$violin_button, {
     selectedRow <- as.numeric(strsplit(input$violin_button, "_")[[1]][2])
-    message(paste('click on vilin ', selectedRow))
+    message(paste('click on violin ', selectedRow))
     xx <- paste0(main_table()[selectedRow, 1], "-", main_table()[selectedRow, 2])
-    myValue$violin <<- xx
+    myValue$selected_gene <<- xx
+    
+    output$plot <- renderPlotly({
+      createPlot()
+    })
   })
   
   
@@ -149,18 +153,12 @@ server <- function(input, output) {
     tbl <- tbl[ , seq(4)]
     tbl$B1 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See detail", onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
     tbl$B2 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See GTP", onclick = 'Shiny.onInputChange(\"population_button\",  this.id)' )
-    tbl$B3 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See as violin", onclick = 'Shiny.onInputChange(\"violin_button\",  this.id)' )
+    tbl$B3 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See violin", onclick = 'Shiny.onInputChange(\"violin_button\",  this.id)' )
     tbl
   })
   # display reactive main table
   output$tableMain <- renderDataTable(main_table(), server = FALSE, escape = FALSE, selection = 'none')
-  
-  
-  # # rective table for list of GTP
-  # gpt_reactive <- reactive({
-  #   createGPT(selectedRow, main_table(), gtrM)
-  # })
-  
+
   # modal dialog box
   modal_main <- function(type, failed = FALSE){
     modalDialog(
@@ -197,51 +195,66 @@ server <- function(input, output) {
   # })
   
   # create the main plot if less than 9 CCDS are selected
-  output$plot <- renderPlotly({ #renderPlot({
-    if(input$type_input == "Gene symbol") {
-      geneS <- input$gene_symbol
-    } else {
-      message("hi!")
-      message(input$phenotype)
-      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+  output$plot <- renderPlotly({
+    createPlot()
+  })
+  
+  
+  
+  createPlot <- function() {
+    message("PLOT!", myValue$selected_gene == "")
+    message("PLOT!", myValue$selected_gene)
+    if(myValue$selected_gene == "") {
+      if(input$type_input == "Gene symbol") {
+        geneS <- input$gene_symbol
+      } else {
+        message("hi!")
+        message(input$phenotype)
+        geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+      }
+      selCCDS <- getCCDS(geneS[1], summary)
+      myValue$selected_gene <- paste0(geneS[1], "-", selCCDS)
     }
-    selCCDS <- getCCDS(geneS, summary)
-    if(length(selCCDS) <= 9) {
+    
+    gene <- strsplit(myValue$selected_gene, "-")[[1]][1]
+    selCCDS <- strsplit(myValue$selected_gene, "-")[[1]][2]
+    
+    #if(length(selCCDS) <= 9) {
       message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
       
       idx <- 0 
       if (input$depth_of_coverage == "10x") {
         load10x(summary)
         idx <- 2
-         
-        dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        
+        dta <- do.call(rbind, list(melt(AFR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
       }
       
       if (input$depth_of_coverage == "20x") {
         load20x(summary)
         idx <- 3
-        dta <- do.call(rbind, list(melt(AFR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
-  
+        dta <- do.call(rbind, list(melt(AFR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        
       }
       
       if (input$depth_of_coverage == "30x") {
         load30x(summary)
         idx <- 4
-        dta <- do.call(rbind, list(melt(AFR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
-  
-       }
+        dta <- do.call(rbind, list(melt(AFR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        
+      }
       
       
       dta$CCDS <- as.character(dta$CCDS)
@@ -249,37 +262,40 @@ server <- function(input, output) {
       dta$variable <- as.character(dta$variable)
       dta$value <- as.numeric(dta$value)
       
-      # gAD <- gnomad_exome[getCCDS(geneS, summary), idx]
-      dta2 <- rbind(dta, data.frame(
-        CCDS = getCCDS(geneS, summary), 
-        Population = "gAD", 
-        GeneSymbol = unlist(lapply(geneS, function(x) { rep(x, length(getCCDS(x, summary))) })),
-        variable = 1, 
-        value = unlist(lapply(geneS, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
-      ))
+      message(colnames(dta))
       
-      dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
-      colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "Coverage")
-      colorsPopulation <- c("AFR" = "#191970", #MidnightBlue
-                       "AMR" = "#4169E1", #RoyalBlue
-                       "EAS" = "#008B8B", #DarkCyan
-                       "EUR" = "#228B22", #ForestGreen
-                       "SAS" = "#9ACD32", #YellowGreen
-                       "gAD" = "#FF4500"  #OrangeRed
-                       )
-      colorsPopulation <- c("AFR" = "#FA8072", #LightSalmon
-                            "AMR" = "#90EE90", #LightGreen
-                            "EAS" = "#FFA500", #Orange
-                            "EUR" = "#AFEEEE", #PaleTurquoise
-                            "SAS" = "#EE82EE", #Violet
-                            "gAD" = "#000000"  #Black
-      )
+      gAD <- gnomad_exome[selCCDS, idx]
       
-      
-      nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
-      
-      plot_ly(dta2, x=~Population, y=~Coverage, split=~CCDS, color=~Population, type = 'violin',
-              box = list(visible = T), meanline = list(visible = T))
+      # dta2 <- rbind(dta, data.frame(
+      #   CCDS = getCCDS(geneS, summary), 
+      #   Population = "gAD", 
+      #   GeneSymbol = unlist(lapply(geneS, function(x) { rep(x, length(getCCDS(x, summary))) })),
+      #   variable = 1, 
+      #   value = unlist(lapply(geneS, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
+      # ))
+      # 
+      # dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
+      # colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "Coverage")
+      # colorsPopulation <- c("AFR" = "#191970", #MidnightBlue
+      #                  "AMR" = "#4169E1", #RoyalBlue
+      #                  "EAS" = "#008B8B", #DarkCyan
+      #                  "EUR" = "#228B22", #ForestGreen
+      #                  "SAS" = "#9ACD32", #YellowGreen
+      #                  "gAD" = "#FF4500"  #OrangeRed
+      #                  )
+      # colorsPopulation <- c("AFR" = "#FA8072", #LightSalmon
+      #                       "AMR" = "#90EE90", #LightGreen
+      #                       "EAS" = "#FFA500", #Orange
+      #                       "EUR" = "#AFEEEE", #PaleTurquoise
+      #                       "SAS" = "#EE82EE", #Violet
+      #                       "gAD" = "#000000"  #Black
+      # )
+      # 
+      # 
+      # nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
+      # 
+      # plot_ly(dta2, x=~Population, y=~Coverage, split=~CCDS, color=~Population, type = 'violin',
+      #         box = list(visible = T), meanline = list(visible = T))
       
       # p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
       #   theme_bw() + geom_boxplot(outlier.shape = NA)  + 
@@ -291,8 +307,17 @@ server <- function(input, output) {
       # 
       # #ggplotly(p1)
       # p1
+      
+      p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
+        theme_bw() + geom_violin(outlier.shape = NA)  +
+        facet_wrap(GeneSymbol~CCDS) + #geom_jitter(alpha=0.55) +
+        geom_hline(yintercept=gAD, colour="black", show.legend = T) +
+        scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+        #scale_color_manual(values=colorsPopulation) +
+        ylab("Breadth of coverage")
+      ggplotly(p1)
     }
-  })
+  #}
 }
 
 # Run the app ----
