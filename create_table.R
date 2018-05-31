@@ -267,3 +267,65 @@ new <- data.frame(gene_symbol, ccds_ids, n_ccds_ids, test_ids, n_test_ids,
                      new_SAS_mean_30x, new_SAS_min_30x, new_SAS_max_30x)
 
 saveRDS(new, "../data/master_table.rds")
+########
+master <- readRDS("../data/master_table.rds")
+rownames(master) <- master$gene_symbol
+AFR_stats_10x <- paste(round(master$new_AFR_mean_10x, 3), 
+             " (", round(master$new_AFR_min_10x, 3), "-", 
+             round(master$new_AFR_max_10x, 3), ")", sep="")
+AFR_stats_20x <- paste(round(master$new_AFR_mean_20x, 3), 
+                       " (", round(master$new_AFR_min_20x, 3), "-", 
+                       round(master$new_AFR_max_20x, 3), ")", sep="")
+AFR_stats_30x <- paste(round(master$new_AFR_mean_30x, 3), 
+                       " (", round(master$new_AFR_min_30x, 3), "-", 
+                       round(master$new_AFR_max_30x, 3), ")", sep="")
+AMR_stats_10x <- paste(round(master$new_AMR_mean_10x, 3), 
+                       " (", round(master$new_AMR_min_10x, 3), "-", 
+                       round(master$new_AMR_max_10x, 3), ")", sep="")
+AMR_stats_20x <- paste(round(master$new_AMR_mean_20x, 3), 
+                       " (", round(master$new_AMR_min_20x, 3), "-", 
+                       round(master$new_AMR_max_20x, 3), ")", sep="")
+AMR_stats_30x <- paste(round(master$new_AMR_mean_30x, 3), 
+                       " (", round(master$new_AMR_min_30x, 3), "-", 
+                       round(master$new_AMR_max_30x, 3), ")", sep="")
+EAS_stats_10x <- paste(round(master$new_EAS_mean_10x, 3), 
+                       " (", round(master$new_EAS_min_10x, 3), "-", 
+                       round(master$new_EAS_max_10x, 3), ")", sep="")
+EAS_stats_20x <- paste(round(master$new_EAS_mean_20x, 3), 
+                       " (", round(master$new_EAS_min_20x, 3), "-", 
+                       round(master$new_EAS_max_20x, 3), ")", sep="")
+EAS_stats_30x <- paste(round(master$new_EAS_mean_30x, 3), 
+                       " (", round(master$new_EAS_min_30x, 3), "-", 
+                       round(master$new_EAS_max_30x, 3), ")", sep="")
+EUR_stats_10x <- paste(round(master$new_EUR_mean_10x, 3), 
+                       " (", round(master$new_EUR_min_10x, 3), "-", 
+                       round(master$new_EUR_max_10x, 3), ")", sep="")
+EUR_stats_20x <- paste(round(master$new_EUR_mean_20x, 3), 
+                       " (", round(master$new_EUR_min_20x, 3), "-", 
+                       round(master$new_EUR_max_20x, 3), ")", sep="")
+EUR_stats_30x <- paste(round(master$new_EUR_mean_30x, 3), 
+                       " (", round(master$new_EUR_min_30x, 3), "-", 
+                       round(master$new_EUR_max_30x, 3), ")", sep="")
+SAS_stats_10x <- paste(round(master$new_SAS_mean_10x, 3), 
+                       " (", round(master$new_SAS_min_10x, 3), "-", 
+                       round(master$new_SAS_max_10x, 3), ")", sep="")
+SAS_stats_20x <- paste(round(master$new_SAS_mean_20x, 3), 
+                       " (", round(master$new_SAS_min_20x, 3), "-", 
+                       round(master$new_SAS_max_20x, 3), ")", sep="")
+SAS_stats_30x <- paste(round(master$new_SAS_mean_30x, 3), 
+                       " (", round(master$new_SAS_min_30x, 3), "-", 
+                       round(master$new_SAS_max_30x, 3), ")", sep="")
+new <- data.frame(master$gene_symbol, master$ccds_ids, master$n_ccds_ids, master$test_ids,
+                  master$n_test_ids, AFR_stats_10x, AFR_stats_20x, AFR_stats_30x,
+                  AMR_stats_10x, AMR_stats_20x, AMR_stats_30x,
+                  EAS_stats_10x, EAS_stats_20x, EAS_stats_30x,
+                  EUR_stats_10x, EUR_stats_20x, EUR_stats_30x,
+                  SAS_stats_10x, SAS_stats_20x, SAS_stats_30x)
+head(new)
+colnames(new) <- c("Gene symbol", "CCDS IDs", "Number of CCDS IDs", "GTR Panels", "Number of GTR Panels",
+                   "AFR 10x (min - max)", "AFR 20x (min - max)", "AFR 30x (min - max)", 
+                   "AMR 10x (min - max)", "AMR 20x (min - max)", "AMR 30x (min - max)",
+                   "EAS 10x (min - max)", "EAS 20x (min - max)", "EAS 30x (min - max)",
+                   "EUR 10x (min - max)", "EUR 20x (min - max)", "EUR 30x (min - max)",
+                   "SAS 10x (min - max)", "SAS 20x (min - max)", "SAS 30x (min - max)")
+saveRDS(new, "../data/master_table.rds")
