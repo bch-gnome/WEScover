@@ -35,45 +35,52 @@ pheno$condition <- sapply(strsplit(pheno$object_name, ":"), function(x) {
 
 # Define UI ----
 ui <- fluidPage(
-  theme = shinytheme("cerulean"),
+  #theme = shinytheme("cerulean"),
   useShinyjs(),
   titlePanel("WEScover"),
-  sidebarLayout(
-    sidebarPanel(
-      h2("User input"),
-      radioButtons("type_input", 
-                   label = "Type of input", 
-                   choices = c("Gene symbol", "Phenotype"),
-                   selected = "Gene symbol",
-                   inline = TRUE),
-      selectizeInput("gene_symbol", 
-                  label = "Gene symbol",
-                  choices = gene_symbol,
-                  selected = gene_symbol[1],
-                  multiple = TRUE ),
-      selectizeInput("phenotype",
-                     label="Phenotype",
-                     choices = unique(pheno$condition),
-                     multiple = FALSE),
-      #textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
-      selectInput("depth_of_coverage", 
-            label = "Depth of coverage",
-            choices = c("10x", "20x", "30x"),
-            selected = "20x"),
-
-      numericInput("breadth_of_coverage", 
-                   h3("Maximum breadth of coverage"), 
-                   value = 0.95)
-      ),
-    
-    # create div for plot output
-    mainPanel(
-      #plotlyOutput("plot", height = 650),
-      plotOutput("plot", height = 650),
-      dataTableOutput('tableMain')
-      )
+  fluidRow(
+    column(3,
+           h2("User input"),
+           radioButtons("type_input", 
+                        label = "Type of input", 
+                        choices = c("Gene symbol", "Phenotype"),
+                        selected = "Gene symbol",
+                        inline = TRUE),
+           selectizeInput("gene_symbol", 
+                          label = "Gene symbol",
+                          choices = gene_symbol,
+                          selected = gene_symbol[1],
+                          multiple = TRUE ),
+           selectizeInput("phenotype",
+                          label="Phenotype",
+                          choices = unique(pheno$condition),
+                          multiple = FALSE),
+           #textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
+           selectInput("depth_of_coverage", 
+                       label = "Depth of coverage",
+                       choices = c("10x", "20x", "30x"),
+                       selected = "20x"),
+           
+           numericInput("breadth_of_coverage", 
+                        h3("Maximum breadth of coverage"), 
+                        value = 0.95)
+    ),
+    hr(),
+    column(6,
+           dataTableOutput('tableMain')  
+    ),
+    column(3, 
+           plotlyOutput("plot", height = 650)
+           #plotOutput("plot", height = 650)
     )
+  ),
+  fluidRow(
+    column(3),
+    column(6),
+    column(3)
   )
+)
+
 
 # Define server logic ----
 server <- function(input, output) {
@@ -88,55 +95,109 @@ server <- function(input, output) {
     }
   })
   
-  # create "mainTable" if necessary (otherwise empty data.frame)
+  # generator of buttons for the main table
+  shinyInput <- function(FUN, len, id, ...) {
+    inputs <- character(len)
+    for (i in seq(len)) {
+      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+    }
+    inputs
+  }
+  
+  
+  # list of global values
+  myValue <- reactiveValues(modal_table = NA, selected_gene = "")
+  
+  
+  # observer to capture detail buttons in the main table
+  observeEvent(input$detail_button, {
+    selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
+    message(paste('click on detail ', selectedRow))
+   
+    myValue$modal_table <<- createGPT(selectedRow, main_table(), gtrM)
+    showModal(modal_main(1))
+  })
+  
+  # observer to capture GPT buttons in the main table
+  observeEvent(input$population_button, {
+    selectedRow <- as.numeric(strsplit(input$population_button, "_")[[1]][2])
+    message(paste('click on population ', selectedRow))
+    geneS <- as.character(main_table()[selectedRow, 1])
+    message('\t', geneS)
+    
+    myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
+    showModal(modal_main(2))
+  })
+  
+  # observer to capture violin buttons in the main table
+  observeEvent(input$violin_button, {
+    selectedRow <- as.numeric(strsplit(input$violin_button, "_")[[1]][2])
+    message(paste('click on vilin ', selectedRow))
+    xx <- paste0(main_table()[selectedRow, 1], "-", main_table()[selectedRow, 2])
+    myValue$violin <<- xx
+  })
+  
+  
+  # create reactive main table
   main_table <- reactive({
     if(input$type_input == "Gene symbol") {
       geneS <- input$gene_symbol
     } else {
       geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
     }
-    createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
+    tbl <- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
+    tbl <- tbl[ , seq(4)]
+    tbl$B1 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See detail", onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
+    tbl$B2 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See GTP", onclick = 'Shiny.onInputChange(\"population_button\",  this.id)' )
+    tbl$B3 <- shinyInput(actionButton, nrow(tbl), 'button_', label = "See as violin", onclick = 'Shiny.onInputChange(\"violin_button\",  this.id)' )
+    tbl
   })
-  # creating the main table if more than 9 CCDS are selected
-  output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
-  # rective table for list of GTP
-  gpt_reactive <- reactive({
-    createGPT(input$tableMain_rows_selected, main_table(), gtrM)
-  })
-  # table displayed in our modal
-  output$modal_table <- renderDataTable({
-    gpt_reactive()
-  }, escape = FALSE)
+  # display reactive main table
+  output$tableMain <- renderDataTable(main_table(), server = FALSE, escape = FALSE, selection = 'none')
+  
+  
+  # # rective table for list of GTP
+  # gpt_reactive <- reactive({
+  #   createGPT(selectedRow, main_table(), gtrM)
+  # })
+  
   # modal dialog box
-  modal_main <- function(failed = FALSE){
+  modal_main <- function(type, failed = FALSE){
     modalDialog(
       dataTableOutput('modal_table'),
       easyClose = TRUE
     )
   }
-  #event to trigger the modal box to appear
-  observeEvent(input$tableMain_rows_selected,{
-    showModal(modal_main())
-  })
   
-  observeEvent(input$gene_symbol, {
-    if(input$type_input == "Gene symbol") {
-      geneS <- input$gene_symbol
-    } else {
-      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
-    }
-    selCCDS <- getCCDS(geneS, summary)
-    if(length(selCCDS) <= 9) {
-      show("plot")
-      hide("tableMain")
-    } else {
-      hide("plot") 
-      show("tableMain")
-    }
-  })
+  # table displayed in our modal
+  output$modal_table <- renderDataTable({
+    myValue$modal_table
+  }, escape = FALSE)
+
+  
+  # #event to trigger the modal box to appear
+  # observeEvent(input$tableMain_rows_selected,{
+  #   showModal(modal_main())
+  # })
+  
+  # observeEvent(input$gene_symbol, {
+  #   if(input$type_input == "Gene symbol") {
+  #     geneS <- input$gene_symbol
+  #   } else {
+  #     geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+  #   }
+  #   selCCDS <- getCCDS(geneS, summary)
+  #   if(length(selCCDS) <= 9) {
+  #     show("plot")
+  #     hide("tableMain")
+  #   } else {
+  #     hide("plot") 
+  #     show("tableMain")
+  #   }
+  # })
   
   # create the main plot if less than 9 CCDS are selected
-  output$plot <- renderPlot({ #renderPlotly({
+  output$plot <- renderPlotly({ #renderPlot({
     if(input$type_input == "Gene symbol") {
       geneS <- input$gene_symbol
     } else {
@@ -198,7 +259,7 @@ server <- function(input, output) {
       ))
       
       dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
-      colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "coverage")
+      colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "Coverage")
       colorsPopulation <- c("AFR" = "#191970", #MidnightBlue
                        "AMR" = "#4169E1", #RoyalBlue
                        "EAS" = "#008B8B", #DarkCyan
@@ -217,16 +278,19 @@ server <- function(input, output) {
       
       nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
       
-      p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
-        theme_bw() + geom_boxplot(outlier.shape = NA)  + 
-        facet_wrap(GeneSymbol~CCDS, ncol = nc) + geom_jitter(alpha=0.55) +
-        #geom_hline(yintercept=gAD, colour="black", show.legend = T) + 
-        scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-        scale_color_manual(values=colorsPopulation) +
-        ylab("Breadth of coverage")
-  
-      #ggplotly(p1)
-      p1
+      plot_ly(dta2, x=~Population, y=~Coverage, split=~CCDS, color=~Population, type = 'violin',
+              box = list(visible = T), meanline = list(visible = T))
+      
+      # p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
+      #   theme_bw() + geom_boxplot(outlier.shape = NA)  + 
+      #   facet_wrap(GeneSymbol~CCDS, ncol = nc) + geom_jitter(alpha=0.55) +
+      #   #geom_hline(yintercept=gAD, colour="black", show.legend = T) + 
+      #   scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+      #   scale_color_manual(values=colorsPopulation) +
+      #   ylab("Breadth of coverage")
+      # 
+      # #ggplotly(p1)
+      # p1
     }
   })
 }

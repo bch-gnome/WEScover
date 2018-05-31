@@ -225,9 +225,9 @@ createGPT <- function(row, main_table, gtrM) {
 
 createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
   selCCDS <- getCCDS(geneS, summary)
-  if(length(selCCDS) <= 9) {
-    data.frame()
-  } else {
+  # if(length(selCCDS) <= 9) {
+  #   data.frame()
+  # } else {
     message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
     idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
     xx <- do.call(rbind, lapply(geneS, function(geneS) {
@@ -252,5 +252,5 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
                       "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
     rownames(xx) <- seq(nrow(xx))
     xx
-  }
+  # }
 }
