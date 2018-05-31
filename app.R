@@ -17,6 +17,9 @@ gtrM <- read.delim("GTR_table.txt")
 gtrS <- read.delim("GTR_summary.txt")
 rownames(gtrS) <- gtrS$ccds_id
 
+master <- readRDS("../data/master_table.rds")
+rownames(master) <- master$gene_symbol
+
 # input <- list()
 # input$gene_symbol <- c("A2ML1", "A2M") #c("ASTN1", "A1CF")
 
@@ -45,6 +48,7 @@ ui <- fluidPage(
     # create div for plot output
     mainPanel(
       #plotlyOutput("plot", height = 650),
+      tableOutput("tablePlot"),
       plotOutput("plot", height = 650),
       dataTableOutput('tableMain')
       )
@@ -57,6 +61,9 @@ server <- function(input, output) {
   main_table <- reactive({
     createMainTable(input$gene_symbol, input$depth_of_coverage, summary, gtrM, gtrS)
   })
+  # creating the table if <= 9 CCCDS IDs selected
+  output$tablePlot <- renderTable(master[input$gene_symbol,])
+  
   # creating the main table if more than 9 CCDS are selected
   output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
   # rective table for list of GTP
