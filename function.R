@@ -2,23 +2,28 @@ getCCDS <- function(geneN, db) {
   db$ccds_id[db$gene == geneN]
 }
 
-load10x <- function() {
+load10x <- function(smr) {
   if(!"AFR_10x" %in% ls(envir = .GlobalEnv)) {
     AFR_10x <- readRDS("../data/AFR_10x.rds")
     AFR_10x$CCDS <- rownames(AFR_10x)
     AFR_10x$Population <- "AFR"
+    AFR_10x$GeneSymbol <- summary[AFR_10x$CCDS, "gene"]
     AMR_10x <- readRDS("../data/AMR_10x.rds")
     AMR_10x$CCDS <- rownames(AMR_10x)
     AMR_10x$Population <- "AMR"
+    AMR_10x$GeneSymbol <- summary[AMR_10x$CCDS, "gene"]
     EAS_10x <- readRDS("../data/EAS_10x.rds")
     EAS_10x$CCDS <- rownames(EAS_10x)
     EAS_10x$Population <- "EAS"
+    EAS_10x$GeneSymbol <- summary[EAS_10x$CCDS, "gene"]
     EUR_10x <- readRDS("../data/EUR_10x.rds")
     EUR_10x$CCDS <- rownames(EUR_10x)
     EUR_10x$Population <- "EUR"
+    EUR_10x$GeneSymbol <- summary[EUR_10x$CCDS, "gene"]
     SAS_10x <- readRDS("../data/SAS_10x.rds")
     SAS_10x$CCDS <- rownames(SAS_10x)
     SAS_10x$Population <- "SAS"
+    SAS_10x$GeneSymbol <- summary[SAS_10x$CCDS, "gene"]
     
     assign("AFR_10x", AFR_10x, envir = .GlobalEnv)
     assign("AMR_10x", AMR_10x, envir = .GlobalEnv)
