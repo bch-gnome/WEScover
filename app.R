@@ -61,7 +61,7 @@ server <- function(input, output) {
   output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
   # rective table for list of GTP
   gpt_reactive <- reactive({
-    createGPT(input$tableMain_rows_selected)
+    createGPT(input$tableMain_rows_selected, main_table(), gtrM)
   })
   # table displayed in our modal
   output$modal_table <- renderDataTable({
