@@ -111,7 +111,7 @@ server <- function(input, output) {
   observeEvent(input$detail_button, {
     selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
     message(paste('click on detail ', selectedRow))
-   
+    
     myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
     showModal(modal_main(1))
   })
@@ -159,7 +159,7 @@ server <- function(input, output) {
     # formatStyle(main_table(), columns = seq(ncol(main_table())),
     #             backgroundColor="#ee00aa"), 
     server = FALSE, escape = FALSE, selection = 'none')
-
+  
   # modal dialog box
   modal_main <- function(type, failed = FALSE){
     modalDialog(
@@ -172,7 +172,7 @@ server <- function(input, output) {
   output$modal_table <- renderDataTable({
     myValue$modal_table
   }, escape = FALSE)
-
+  
   
   # #event to trigger the modal box to appear
   # observeEvent(input$tableMain_rows_selected,{
@@ -221,103 +221,103 @@ server <- function(input, output) {
     selCCDS <- strsplit(myValue$selected_gene, "-")[[1]][2]
     
     #if(length(selCCDS) <= 9) {
-      message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
+    message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
+    
+    idx <- 0 
+    if (input$depth_of_coverage == "10x") {
+      load10x(summary)
+      idx <- 2
       
-      idx <- 0 
-      if (input$depth_of_coverage == "10x") {
-        load10x(summary)
-        idx <- 2
-        
-        dta <- do.call(rbind, list(melt(AFR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
-      }
-      
-      if (input$depth_of_coverage == "20x") {
-        load20x(summary)
-        idx <- 3
-        dta <- do.call(rbind, list(melt(AFR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
-        
-      }
-      
-      if (input$depth_of_coverage == "30x") {
-        load30x(summary)
-        idx <- 4
-        dta <- do.call(rbind, list(melt(AFR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
-        
-      }
-      
-      
-      dta$CCDS <- as.character(dta$CCDS)
-      dta$Population <- as.character(dta$Population)
-      dta$variable <- as.character(dta$variable)
-      dta$value <- as.numeric(dta$value)
-      
-      message(colnames(dta))
-      
-      gAD <- gnomad_exome[selCCDS, idx]
-      
-      # dta2 <- rbind(dta, data.frame(
-      #   CCDS = getCCDS(geneS, summary), 
-      #   Population = "gAD", 
-      #   GeneSymbol = unlist(lapply(geneS, function(x) { rep(x, length(getCCDS(x, summary))) })),
-      #   variable = 1, 
-      #   value = unlist(lapply(geneS, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
-      # ))
-      # 
-      # dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
-      # colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "Coverage")
-      # colorsPopulation <- c("AFR" = "#191970", #MidnightBlue
-      #                  "AMR" = "#4169E1", #RoyalBlue
-      #                  "EAS" = "#008B8B", #DarkCyan
-      #                  "EUR" = "#228B22", #ForestGreen
-      #                  "SAS" = "#9ACD32", #YellowGreen
-      #                  "gAD" = "#FF4500"  #OrangeRed
-      #                  )
-      # colorsPopulation <- c("AFR" = "#FA8072", #LightSalmon
-      #                       "AMR" = "#90EE90", #LightGreen
-      #                       "EAS" = "#FFA500", #Orange
-      #                       "EUR" = "#AFEEEE", #PaleTurquoise
-      #                       "SAS" = "#EE82EE", #Violet
-      #                       "gAD" = "#000000"  #Black
-      # )
-      # 
-      # 
-      # nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
-      # 
-      # plot_ly(dta2, x=~Population, y=~Coverage, split=~CCDS, color=~Population, type = 'violin',
-      #         box = list(visible = T), meanline = list(visible = T))
-      
-      # p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
-      #   theme_bw() + geom_boxplot(outlier.shape = NA)  + 
-      #   facet_wrap(GeneSymbol~CCDS, ncol = nc) + geom_jitter(alpha=0.55) +
-      #   #geom_hline(yintercept=gAD, colour="black", show.legend = T) + 
-      #   scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-      #   scale_color_manual(values=colorsPopulation) +
-      #   ylab("Breadth of coverage")
-      # 
-      # #ggplotly(p1)
-      # p1
-      
-      p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
-        theme_bw() + geom_violin(outlier.shape = NA)  +
-        facet_wrap(GeneSymbol~CCDS) + #geom_jitter(alpha=0.55) +
-        geom_hline(yintercept=gAD, colour="black", show.legend = T) +
-        scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-        #scale_color_manual(values=colorsPopulation) +
-        ylab("Breadth of coverage")
-      ggplotly(p1)
+      dta <- do.call(rbind, list(melt(AFR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
     }
+    
+    if (input$depth_of_coverage == "20x") {
+      load20x(summary)
+      idx <- 3
+      dta <- do.call(rbind, list(melt(AFR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    if (input$depth_of_coverage == "30x") {
+      load30x(summary)
+      idx <- 4
+      dta <- do.call(rbind, list(melt(AFR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    
+    dta$CCDS <- as.character(dta$CCDS)
+    dta$Population <- as.character(dta$Population)
+    dta$variable <- as.character(dta$variable)
+    dta$value <- as.numeric(dta$value)
+    
+    message(colnames(dta))
+    
+    gAD <- gnomad_exome[selCCDS, idx]
+    
+    # dta2 <- rbind(dta, data.frame(
+    #   CCDS = getCCDS(geneS, summary), 
+    #   Population = "gAD", 
+    #   GeneSymbol = unlist(lapply(geneS, function(x) { rep(x, length(getCCDS(x, summary))) })),
+    #   variable = 1, 
+    #   value = unlist(lapply(geneS, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
+    # ))
+    # 
+    # dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
+    # colnames(dta2) <- c("CCDS", "Population", "GeneSymbol", "variable", "Coverage")
+    # colorsPopulation <- c("AFR" = "#191970", #MidnightBlue
+    #                  "AMR" = "#4169E1", #RoyalBlue
+    #                  "EAS" = "#008B8B", #DarkCyan
+    #                  "EUR" = "#228B22", #ForestGreen
+    #                  "SAS" = "#9ACD32", #YellowGreen
+    #                  "gAD" = "#FF4500"  #OrangeRed
+    #                  )
+    # colorsPopulation <- c("AFR" = "#FA8072", #LightSalmon
+    #                       "AMR" = "#90EE90", #LightGreen
+    #                       "EAS" = "#FFA500", #Orange
+    #                       "EUR" = "#AFEEEE", #PaleTurquoise
+    #                       "SAS" = "#EE82EE", #Violet
+    #                       "gAD" = "#000000"  #Black
+    # )
+    # 
+    # 
+    # nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
+    # 
+    # plot_ly(dta2, x=~Population, y=~Coverage, split=~CCDS, color=~Population, type = 'violin',
+    #         box = list(visible = T), meanline = list(visible = T))
+    
+    # p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
+    #   theme_bw() + geom_boxplot(outlier.shape = NA)  + 
+    #   facet_wrap(GeneSymbol~CCDS, ncol = nc) + geom_jitter(alpha=0.55) +
+    #   #geom_hline(yintercept=gAD, colour="black", show.legend = T) + 
+    #   scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+    #   scale_color_manual(values=colorsPopulation) +
+    #   ylab("Breadth of coverage")
+    # 
+    # #ggplotly(p1)
+    # p1
+    
+    p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
+      theme_bw() + geom_violin(outlier.shape = NA)  +
+      facet_wrap(GeneSymbol~CCDS) + #geom_jitter(alpha=0.55) +
+      geom_hline(yintercept=gAD, colour="black", show.legend = T) +
+      scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+      #scale_color_manual(values=colorsPopulation) +
+      ylab("Breadth of coverage")
+    ggplotly(p1)
+  }
   #}
 }
 
