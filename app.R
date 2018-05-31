@@ -43,7 +43,7 @@ ui <- fluidPage(
     mainPanel(
       #plotlyOutput("plot", height = 650),
       plotOutput("plot", height = 650),
-      dataTableOutput('table')
+      dataTableOutput('tableMain')
       )
     )
   )
@@ -51,15 +51,36 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output) {
   # creating the main table if more than 9 CCDS are selected
-  output$tbl = renderDataTable(data.frame(), server = FALSE, selection = 'single')
+  output$tableMain <-  renderDataTable( {
+    selCCDS <- getCCDS(input$gene_symbol, summary)
+    if(length(selCCDS) >= 9) {
+        data.frame()
+      } else {
+        message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
+        xx <- data.frame(
+          "Gene Symbol" = unlist(lapply(input$gene_symbol, function(x) { rep(x, length(getCCDS(x, summary))) })),
+          "CCDS" = getCCDS(input$gene_symbol, summary),
+          "Gene Panel Testing" = "",
+          "Global Mean (min-max)" = "",
+          "AFR (min-max)" = "",
+          "AMR (min-max)" = "",
+          "EAS (min-max)" = "",
+          "EUR (min-max)" = "",
+          "SAS (min-max)" = "",
+          stringsAsFactors = FALSE
+        )
+        colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "Global Mean (min-max)", "AFR (min-max)", 
+                         "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
+        xx
+      }}, server = FALSE, selection = 'single')
   #   iris, options = list(lengthChange = FALSE)
   # )
   
   # create the main plot if less than 9 CCDS are selected
   output$plot <-  renderPlot({ #renderPlotly({
     selCCDS <- getCCDS(input$gene_symbol, summary)
-    if(length(selCCDS) <= 9) {
-      message("Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
+    if(length(selCCDS) >= 9) {
+      message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
       
       idx <- 0 
       if (input$depth_of_coverage == "10x") {
@@ -128,7 +149,7 @@ server <- function(input, output) {
       )
       
       
-      nc <- ifelse(length(unique(dta2$CCDS)) %% 3, 3, 2)
+      nc <- ifelse(length(unique(dta2$CCDS)) %% 3 == 0, 3, 2)
       
       p1 <- ggplot(dta2, aes(x=Population, y=coverage, color=Population)) + 
         theme_bw() + geom_boxplot(outlier.shape = NA)  + 
