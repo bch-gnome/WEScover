@@ -9,9 +9,9 @@ source("function.R")
 
 # get data
 
-gene_symbol <- readRDS("data/gene_symbol.rds")
-gnomad_exome <- readRDS("data/gnomad_exome.rds")
-summary <- readRDS("data/summary.rds")
+gene_symbol <- readRDS("../data/gene_symbol.rds")
+gnomad_exome <- readRDS("../data/gnomad_exome.rds")
+summary <- readRDS("../data/summary.rds")
 
 # Define UI ----
 ui <- fluidPage(
@@ -54,10 +54,10 @@ server <- function(input, output) {
       idx <- 2
       
       dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-      melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-      melt(EAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-      melt(EUR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-      melt(SAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
+                                 melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EUR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(SAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
     }
     
     if (input$depth_of_coverage == "20x") {
