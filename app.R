@@ -13,6 +13,9 @@ gene_symbol <- readRDS("../data/gene_symbol.rds")
 gnomad_exome <- read.delim("gnomad_exome.txt", header = F)
 rownames(gnomad_exome) <- gnomad_exome$V1
 summary <- readRDS("../data/summary.rds")
+gtrM <- read.delim("GTR_table.txt")
+gtrS <- read.delim("GTR_summary.txt")
+rownames(gtrS) <- gtrS$ccds_id
 
 # input <- list()
 # input$gene_symbol <- c("A2ML1", "A2M") #c("ASTN1", "A1CF")
@@ -50,34 +53,36 @@ ui <- fluidPage(
 
 # Define server logic ----
 server <- function(input, output) {
+  # create "mainTable" if necessary (otherwise empty data.frame)
+  main_table <- reactive({
+    createMainTable(input$gene_symbol, input$depth_of_coverage, summary, gtrM, gtrS)
+  })
   # creating the main table if more than 9 CCDS are selected
-  output$tableMain <-  renderDataTable( {
-    selCCDS <- getCCDS(input$gene_symbol, summary)
-    if(length(selCCDS) >= 9) {
-        data.frame()
-      } else {
-        message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
-        xx <- data.frame(
-          "Gene Symbol" = unlist(lapply(input$gene_symbol, function(x) { rep(x, length(getCCDS(x, summary))) })),
-          "CCDS" = getCCDS(input$gene_symbol, summary),
-          "Gene Panel Testing" = "",
-          "Global Mean (min-max)" = "",
-          "AFR (min-max)" = "",
-          "AMR (min-max)" = "",
-          "EAS (min-max)" = "",
-          "EUR (min-max)" = "",
-          "SAS (min-max)" = "",
-          stringsAsFactors = FALSE
-        )
-        colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "Global Mean (min-max)", "AFR (min-max)", 
-                         "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
-        xx
-      }}, server = FALSE, selection = 'single')
-  #   iris, options = list(lengthChange = FALSE)
-  # )
+  output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
+  # rective table for list of GTP
+  gpt_reactive <- reactive({
+    createGPT(input$tableMain_rows_selected)
+  })
+  # table displayed in our modal
+  output$modal_table <- renderDataTable({
+    gpt_reactive()
+  })
+  # modal dialog box
+  modal_main <- function(failed = FALSE){
+    modalDialog(
+      dataTableOutput('modal_table'),
+      easyClose = TRUE
+    )
+  }
+  #event to trigger the modal box to appear
+  observeEvent(input$tableMain_rows_selected,{
+    showModal(modal_main())
+  })
+  
+  
   
   # create the main plot if less than 9 CCDS are selected
-  output$plot <-  renderPlot({ #renderPlotly({
+  output$plot <- renderPlot({ #renderPlotly({
     selCCDS <- getCCDS(input$gene_symbol, summary)
     if(length(selCCDS) >= 9) {
       message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )

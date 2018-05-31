@@ -1,7 +1,7 @@
-getCCDS <- function(geneN, db) {
+getCCDS <- function(geneN, sm) {
   #message("getCCDS - ", paste(geneN, collapse = ", "))
   unlist(lapply(geneN, function(x) {
-    db$ccds_id[db$gene == x]
+    sm$ccds_id[sm$gene == x]
   }))
 }
 
@@ -98,3 +98,153 @@ load30x <- function(summary) {
   }
 }
 
+
+globalMean <- function(idx, ccds, summary) {
+  if(idx==3) {
+    load10x(summary)
+    list(
+      "AFR" = apply(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AFR.MI" = apply(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AFR.MA" = apply(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], MARGIN = 1, max, na.rm = T),
+      "AMR" = apply(AMR_10x[ccds, seq(ncol(AMR_10x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AMR.MI" = apply(AMR_10x[ccds, seq(ncol(AMR_10x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AMR.MA" = apply(AMR_10x[ccds, seq(ncol(AMR_10x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EAS" = apply(EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EAS.MI" = apply(EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EAS.MA" = apply(EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EUR" = apply(EUR_10x[ccds, seq(ncol(EUR_10x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EUR.MI" = apply(EUR_10x[ccds, seq(ncol(EUR_10x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EUR.MA" = apply(EUR_10x[ccds, seq(ncol(EUR_10x) - 3)], MARGIN = 1, max, na.rm = T),
+      "SAS" = apply(SAS_10x[ccds, seq(ncol(SAS_10x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "SAS.MI" = apply(SAS_10x[ccds, seq(ncol(SAS_10x) - 3)], MARGIN = 1, min, na.rm = T),
+      "SAS.MA" = apply(SAS_10x[ccds, seq(ncol(SAS_10x) - 3)], MARGIN = 1, max, na.rm = T),
+      "GLOBAL"= apply(
+        do.call(cbind, list(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], AMR_10x[ccds, seq(ncol(AMR_10x) - 3)],
+                            EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], EUR_10x[ccds, seq(ncol(EUR_10x) - 3)],
+                            SAS_10x[ccds, seq(ncol(SAS_10x) - 3)])), 
+        MARGIN = 1, mean, na.rm = T),
+      "GLOBAL.MI"= apply(
+        do.call(cbind, list(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], AMR_10x[ccds, seq(ncol(AMR_10x) - 3)],
+                            EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], EUR_10x[ccds, seq(ncol(EUR_10x) - 3)],
+                            SAS_10x[ccds, seq(ncol(SAS_10x) - 3)])), 
+        MARGIN = 1, min, na.rm = T),
+      "GLOBAL.MA"= apply(
+        do.call(cbind, list(AFR_10x[ccds, seq(ncol(AFR_10x) - 3)], AMR_10x[ccds, seq(ncol(AMR_10x) - 3)],
+                            EAS_10x[ccds, seq(ncol(EAS_10x) - 3)], EUR_10x[ccds, seq(ncol(EUR_10x) - 3)],
+                            SAS_10x[ccds, seq(ncol(SAS_10x) - 3)])), 
+        MARGIN = 1, max, na.rm = T)
+    )
+  } else if(idx == 4) {
+    load20x(summary)
+    list(
+      "AFR" = apply(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AFR.MI" = apply(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AFR.MA" = apply(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], MARGIN = 1, max, na.rm = T),
+      "AMR" = apply(AMR_20x[ccds, seq(ncol(AMR_20x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AMR.MI" = apply(AMR_20x[ccds, seq(ncol(AMR_20x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AMR.MA" = apply(AMR_20x[ccds, seq(ncol(AMR_20x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EAS" = apply(EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EAS.MI" = apply(EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EAS.MA" = apply(EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EUR" = apply(EUR_20x[ccds, seq(ncol(EUR_20x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EUR.MI" = apply(EUR_20x[ccds, seq(ncol(EUR_20x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EUR.MA" = apply(EUR_20x[ccds, seq(ncol(EUR_20x) - 3)], MARGIN = 1, max, na.rm = T),
+      "SAS" = apply(SAS_20x[ccds, seq(ncol(SAS_20x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "SAS.MI" = apply(SAS_20x[ccds, seq(ncol(SAS_20x) - 3)], MARGIN = 1, min, na.rm = T),
+      "SAS.MA" = apply(SAS_20x[ccds, seq(ncol(SAS_20x) - 3)], MARGIN = 1, max, na.rm = T),
+      "GLOBAL"= apply(
+        do.call(cbind, list(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], AMR_20x[ccds, seq(ncol(AMR_20x) - 3)],
+                            EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], EUR_20x[ccds, seq(ncol(EUR_20x) - 3)],
+                            SAS_20x[ccds, seq(ncol(SAS_20x) - 3)])), 
+        MARGIN = 1, mean, na.rm = T),
+      "GLOBAL.MI"= apply(
+        do.call(cbind, list(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], AMR_20x[ccds, seq(ncol(AMR_20x) - 3)],
+                            EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], EUR_20x[ccds, seq(ncol(EUR_20x) - 3)],
+                            SAS_20x[ccds, seq(ncol(SAS_20x) - 3)])), 
+        MARGIN = 1, min, na.rm = T),
+      "GLOBAL.MA"= apply(
+        do.call(cbind, list(AFR_20x[ccds, seq(ncol(AFR_20x) - 3)], AMR_20x[ccds, seq(ncol(AMR_20x) - 3)],
+                            EAS_20x[ccds, seq(ncol(EAS_20x) - 3)], EUR_20x[ccds, seq(ncol(EUR_20x) - 3)],
+                            SAS_20x[ccds, seq(ncol(SAS_20x) - 3)])), 
+        MARGIN = 1, max, na.rm = T)
+    )
+  } else if(idx == 5) {
+    load30x(summary)
+    list(
+      "AFR" = apply(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AFR.MI" = apply(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AFR.MA" = apply(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], MARGIN = 1, max, na.rm = T),
+      "AMR" = apply(AMR_30x[ccds, seq(ncol(AMR_30x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "AMR.MI" = apply(AMR_30x[ccds, seq(ncol(AMR_30x) - 3)], MARGIN = 1, min, na.rm = T),
+      "AMR.MA" = apply(AMR_30x[ccds, seq(ncol(AMR_30x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EAS" = apply(EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EAS.MI" = apply(EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EAS.MA" = apply(EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], MARGIN = 1, max, na.rm = T),
+      "EUR" = apply(EUR_30x[ccds, seq(ncol(EUR_30x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "EUR.MI" = apply(EUR_30x[ccds, seq(ncol(EUR_30x) - 3)], MARGIN = 1, min, na.rm = T),
+      "EUR.MA" = apply(EUR_30x[ccds, seq(ncol(EUR_30x) - 3)], MARGIN = 1, max, na.rm = T),
+      "SAS" = apply(SAS_30x[ccds, seq(ncol(SAS_30x) - 3)], MARGIN = 1, mean, na.rm = T),
+      "SAS.MI" = apply(SAS_30x[ccds, seq(ncol(SAS_30x) - 3)], MARGIN = 1, min, na.rm = T),
+      "SAS.MA" = apply(SAS_30x[ccds, seq(ncol(SAS_30x) - 3)], MARGIN = 1, max, na.rm = T),
+      "GLOBAL"= apply(
+        do.call(cbind, list(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], AMR_30x[ccds, seq(ncol(AMR_30x) - 3)],
+                            EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], EUR_30x[ccds, seq(ncol(EUR_30x) - 3)],
+                            SAS_30x[ccds, seq(ncol(SAS_30x) - 3)])), 
+        MARGIN = 1, mean, na.rm = T),
+      "GLOBAL.MI"= apply(
+        do.call(cbind, list(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], AMR_30x[ccds, seq(ncol(AMR_30x) - 3)],
+                            EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], EUR_30x[ccds, seq(ncol(EUR_30x) - 3)],
+                            SAS_30x[ccds, seq(ncol(SAS_30x) - 3)])), 
+        MARGIN = 1, min, na.rm = T),
+      "GLOBAL.MA"= apply(
+        do.call(cbind, list(AFR_30x[ccds, seq(ncol(AFR_30x) - 3)], AMR_30x[ccds, seq(ncol(AMR_30x) - 3)],
+                            EAS_30x[ccds, seq(ncol(EAS_30x) - 3)], EUR_30x[ccds, seq(ncol(EUR_30x) - 3)],
+                            SAS_30x[ccds, seq(ncol(SAS_30x) - 3)])), 
+        MARGIN = 1, max, na.rm = T)
+    )
+  }
+}
+
+
+createGPT <- function(row) {
+  tbl <- data.frame(
+    A = main_table[row, 1],
+    B = unique(gtrM[gtrM$GeneSymbol == main_table[row, 1], "AccessionVersion"])
+  )
+  colnames(tbl) <- c("Gene Symbol", "Gene Panel Testing")
+  rownames(tbl) <- seq(nrow(tbl))
+}
+
+createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
+  message(geneS)
+  selCCDS <- getCCDS(geneS, summary)
+  message(geneS)
+  if(length(selCCDS) >= 9) {
+    data.frame()
+  } else {
+    message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
+    idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
+    xx <- do.call(rbind, lapply(geneS, function(geneS) {
+      selCCDS <- getCCDS(geneS, summary)
+      GS <- gtrS[selCCDS, "gene"]
+      GPT <- length(unique(gtrM[gtrM$GeneSymbol == geneS, "AccessionVersion"]))
+      MM <- globalMean(idx, selCCDS, summary)
+      data.frame(
+        A = GS,
+        B = selCCDS,
+        C = GPT,
+        D = paste(round(MM$GLOBAL, 3), " (", round(MM$GLOBAL.MI, 3), "-", round(MM$GLOBAL.MA, 3), ")", sep=""),
+        E = paste(round(MM$AFR, 3), " (", round(MM$AFR.MI, 3), "-", round(MM$AFR.MA, 3), ")", sep=""),
+        F = paste(round(MM$AMR, 3), " (", round(MM$AMR.MI, 3), "-", round(MM$AMR.MA, 3), ")", sep=""),
+        G = paste(round(MM$EAS, 3), " (", round(MM$EAS.MI, 3), "-", round(MM$EAS.MA, 3), ")", sep=""),
+        H = paste(round(MM$EUR, 3), " (", round(MM$EUR.MI, 3), "-", round(MM$EUR.MA, 3), ")", sep=""),
+        I = paste(round(MM$SAS, 3), " (", round(MM$SAS.MI, 3), "-", round(MM$SAS.MA, 3), ")", sep=""),
+        stringsAsFactors = FALSE
+      )
+    }))
+    colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "Global Mean (min-max)", "AFR (min-max)", 
+                      "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
+    rownames(xx) <- seq(nrow(xx))
+    xx
+  }
+}
