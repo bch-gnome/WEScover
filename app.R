@@ -63,22 +63,22 @@ server <- function(input, output) {
     if (input$depth_of_coverage == "20x") {
       load20x(summary)
       idx <- 3
-      dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(EAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(EUR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(SAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
+      dta <- do.call(rbind, list(melt(AFR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(AMR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EAS_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EUR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(SAS_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
 
     }
     
     if (input$depth_of_coverage == "30x") {
       load30x(summary)
       idx <- 4
-      dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(EAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(EUR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
-                                 melt(SAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
+      dta <- do.call(rbind, list(melt(AFR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(AMR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EAS_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(EUR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population")),
+                                 melt(SAS_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population"))))
 
      }
     
