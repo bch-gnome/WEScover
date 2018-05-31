@@ -107,6 +107,13 @@ server <- function(input, output) {
                      "SAS" = "#9ACD32", #YellowGreen
                      "gAD" = "#FF4500"  #OrangeRed
                      )
+    colorsPopulation <- c("AFR" = "#FA8072", #LightSalmon
+                          "AMR" = "#90EE90", #LightGreen
+                          "EAS" = "#FFA500", #Orange
+                          "EUR" = "#AFEEEE", #PaleTurquoise
+                          "SAS" = "#EE82EE", #Violet
+                          "gAD" = "#000000"  #Black
+    )
     
     
     nc <- ifelse(length(unique(dta2$CCDS)) %% 3, 3, 2)
@@ -116,7 +123,7 @@ server <- function(input, output) {
       facet_wrap(GeneSymbol~CCDS, ncol = nc) + geom_jitter(alpha=0.55) +
       #geom_hline(yintercept=gAD, colour="black", show.legend = T) + 
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-      scale_fill_manual(values=colorsPopulation) +
+      scale_color_manual(values=colorsPopulation) +
       ylab("Breadth of coverage")
 
     ggplotly(p1)
