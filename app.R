@@ -12,12 +12,23 @@ source("function.R")
 
 # load data
 gene_symbol <- readRDS("../data/gene_symbol.rds")
-gnomad_exome <- read.delim("gnomad_exome.txt", header = F)
+gnomad_exome <- read.delim("gnomad_exome.txt", header = F, stringsAsFactors = FALSE)
 rownames(gnomad_exome) <- gnomad_exome$V1
 summary <- readRDS("../data/summary.rds")
 gtrM <- read.delim("GTR_table.txt")
 gtrS <- read.delim("GTR_summary.txt")
 rownames(gtrS) <- gtrS$ccds_id
+pheno <- read.delim("test_condition_gene.txt", stringsAsFactors = FALSE)
+pheno <- pheno[pheno$object == "gene", ]
+pheno$condition <- sapply(strsplit(pheno$object_name, ":"), function(x) {
+  if(length(x) == 1) {
+    ""
+  } else if(length(x) == 2) {
+    x[2]
+  } else {
+    paste0(x[2], ":", x[3])
+  }
+})
 
 # input <- list()
 # input$gene_symbol <- c("A2ML1", "A2M") #c("ASTN1", "A1CF")
@@ -30,12 +41,21 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       h2("User input"),
+      radioButtons("type_input", 
+                   label = "Type of input", 
+                   choices = c("Gene symbol", "Phenotype"),
+                   selected = "Gene symbol",
+                   inline = TRUE),
       selectizeInput("gene_symbol", 
                   label = "Gene symbol",
                   choices = gene_symbol,
                   selected = gene_symbol[1],
                   multiple = TRUE ),
-      textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
+      selectizeInput("phenotype",
+                     label="Phenotype",
+                     choices = unique(pheno$condition),
+                     multiple = FALSE),
+      #textInput("phenotype", h3("Phenotype"), value = "Enter phenotype..."),
       selectInput("depth_of_coverage", 
             label = "Depth of coverage",
             choices = c("10x", "20x", "30x"),
@@ -57,9 +77,25 @@ ui <- fluidPage(
 
 # Define server logic ----
 server <- function(input, output) {
+  # disable/enable input according to radio buttons
+  observe({
+    if (input$type_input == "Gene symbol") {
+      shinyjs::enable("gene_symbol")
+      shinyjs::disable("phenotype")
+    } else {
+      shinyjs::disable("gene_symbol")
+      shinyjs::enable("phenotype")
+    }
+  })
+  
   # create "mainTable" if necessary (otherwise empty data.frame)
   main_table <- reactive({
-    createMainTable(input$gene_symbol, input$depth_of_coverage, summary, gtrM, gtrS)
+    if(input$type_input == "Gene symbol") {
+      geneS <- input$gene_symbol
+    } else {
+      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+    }
+    createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
   })
   # creating the main table if more than 9 CCDS are selected
   output$tableMain <- renderDataTable(main_table(), server = FALSE, selection = 'single')
@@ -84,7 +120,12 @@ server <- function(input, output) {
   })
   
   observeEvent(input$gene_symbol, {
-    selCCDS <- getCCDS(input$gene_symbol, summary)
+    if(input$type_input == "Gene symbol") {
+      geneS <- input$gene_symbol
+    } else {
+      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+    }
+    selCCDS <- getCCDS(geneS, summary)
     if(length(selCCDS) <= 9) {
       show("plot")
       hide("tableMain")
@@ -96,7 +137,14 @@ server <- function(input, output) {
   
   # create the main plot if less than 9 CCDS are selected
   output$plot <- renderPlot({ #renderPlotly({
-    selCCDS <- getCCDS(input$gene_symbol, summary)
+    if(input$type_input == "Gene symbol") {
+      geneS <- input$gene_symbol
+    } else {
+      message("hi!")
+      message(input$phenotype)
+      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+    }
+    selCCDS <- getCCDS(geneS, summary)
     if(length(selCCDS) <= 9) {
       message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
       
@@ -105,32 +153,32 @@ server <- function(input, output) {
         load10x(summary)
         idx <- 2
          
-        dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_10x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        dta <- do.call(rbind, list(melt(AFR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_10x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
       }
       
       if (input$depth_of_coverage == "20x") {
         load20x(summary)
         idx <- 3
-        dta <- do.call(rbind, list(melt(AFR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_20x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        dta <- do.call(rbind, list(melt(AFR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_20x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
   
       }
       
       if (input$depth_of_coverage == "30x") {
         load30x(summary)
         idx <- 4
-        dta <- do.call(rbind, list(melt(AFR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(AMR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EAS_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(EUR_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
-                                   melt(SAS_30x[getCCDS(input$gene_symbol, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+        dta <- do.call(rbind, list(melt(AFR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(AMR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EAS_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(EUR_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                   melt(SAS_30x[getCCDS(geneS, summary), ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
   
        }
       
@@ -140,13 +188,13 @@ server <- function(input, output) {
       dta$variable <- as.character(dta$variable)
       dta$value <- as.numeric(dta$value)
       
-      # gAD <- gnomad_exome[getCCDS(input$gene_symbol, summary), idx]
+      # gAD <- gnomad_exome[getCCDS(geneS, summary), idx]
       dta2 <- rbind(dta, data.frame(
-        CCDS = getCCDS(input$gene_symbol, summary), 
+        CCDS = getCCDS(geneS, summary), 
         Population = "gAD", 
-        GeneSymbol = unlist(lapply(input$gene_symbol, function(x) { rep(x, length(getCCDS(x, summary))) })),
+        GeneSymbol = unlist(lapply(geneS, function(x) { rep(x, length(getCCDS(x, summary))) })),
         variable = 1, 
-        value = unlist(lapply(input$gene_symbol, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
+        value = unlist(lapply(geneS, function(x) { gnomad_exome[getCCDS(x, summary), idx] }))
       ))
       
       dta2$Population <- factor(dta2$Population, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "gAD"))
