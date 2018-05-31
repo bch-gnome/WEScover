@@ -208,18 +208,18 @@ globalMean <- function(idx, ccds, summary) {
 
 createGPT <- function(row, main_table, gtrM) {
   tbl <- data.frame(
-    A = main_table[row, 1],
-    B = unique(gtrM[gtrM$GeneSymbol == main_table[row, 1], "AccessionVersion"]),
+    A = as.character(main_table[row, 1]),
+    B = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "AccessionVersion"]),
+    C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
     stringsAsFactors = FALSE
   )
-  colnames(tbl) <- c("Gene Symbol", "Gene Panel Testing")
+  colnames(tbl) <- c("Gene Symbol", "Version", "Gene Panel Testing")
   rownames(tbl) <- seq(nrow(tbl))
+  tbl
 }
 
 createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
-  message(geneS)
   selCCDS <- getCCDS(geneS, summary)
-  message(geneS)
   if(length(selCCDS) >= 9) {
     data.frame()
   } else {
