@@ -111,6 +111,7 @@ server <- function(input, output) {
   observeEvent(input$detail_button, {
     selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
     message(paste('click on detail ', selectedRow))
+    geneS <- as.character(main_table()[selectedRow, 1])
     
     myValue$modal_table <<- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[ , c(1:2, 5:9)]
     showModal(modal_main(1))
@@ -120,7 +121,6 @@ server <- function(input, output) {
   observeEvent(input$population_button, {
     selectedRow <- as.numeric(strsplit(input$population_button, "_")[[1]][2])
     message(paste('click on population ', selectedRow))
-    geneS <- as.character(main_table()[selectedRow, 1])
     
     myValue$modal_table <<- createGPT(selectedRow, main_table(), gtrM)
     showModal(modal_main(2))
