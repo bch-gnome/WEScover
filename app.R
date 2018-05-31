@@ -66,7 +66,7 @@ server <- function(input, output) {
   # table displayed in our modal
   output$modal_table <- renderDataTable({
     gpt_reactive()
-  })
+  }, escape = FALSE)
   # modal dialog box
   modal_main <- function(failed = FALSE){
     modalDialog(

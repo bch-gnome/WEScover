@@ -213,6 +213,11 @@ createGPT <- function(row, main_table, gtrM) {
     C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
     stringsAsFactors = FALSE
   )
+  createLink <- function(val) {
+    sprintf('<a href="https://www.ncbi.nlm.nih.gov/gtr/tests/%s" target="_blank" class="btn btn-primary">%s</a>',val, val)
+  }
+  tbl$B <- sapply(tbl$B, createLink)
+  
   colnames(tbl) <- c("Gene Symbol", "Version", "Gene Panel Testing")
   rownames(tbl) <- seq(nrow(tbl))
   tbl
