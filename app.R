@@ -19,7 +19,6 @@ gtrM <- read.delim("GTR_table.txt")
 gtrS <- read.delim("GTR_summary.txt")
 rownames(gtrS) <- gtrS$ccds_id
 pheno <- readRDS("../data/phenotypes.rds")
-pheno <- pheno[pheno$num_genes <= 100, ]
 
 #master <- readRDS("../data/master_table.rds")
 #rownames(master) <- master$gene_symbol
@@ -136,6 +135,9 @@ server <- function(input, output) {
       geneS <- input$gene_symbol
     } else {
       geneS <- as.character(unique(pheno[pheno$phenotype_name == input$phenotype, "gene_symbol"]))
+      if(length(geneS) > 50) {
+        geneS <- geneS[seq(50)]
+      }
     }
     tbl <- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     tbl <- tbl[ , seq(4)]
