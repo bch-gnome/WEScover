@@ -18,17 +18,8 @@ summary <- readRDS("../data/summary.rds")
 gtrM <- read.delim("GTR_table.txt")
 gtrS <- read.delim("GTR_summary.txt")
 rownames(gtrS) <- gtrS$ccds_id
-pheno <- read.delim("test_condition_gene.txt", stringsAsFactors = FALSE)
-pheno <- pheno[pheno$object == "gene", ]
-pheno$condition <- sapply(strsplit(pheno$object_name, ":"), function(x) {
-  if(length(x) == 1) {
-    ""
-  } else if(length(x) == 2) {
-    x[2]
-  } else {
-    paste0(x[2], ":", x[3])
-  }
-})
+pheno <- readRDS("../data/phenotypes.rds")
+pheno <- pheno[pheno$num_genes <= 100, ]
 
 #master <- readRDS("../data/master_table.rds")
 #rownames(master) <- master$gene_symbol
@@ -56,7 +47,7 @@ ui <- fluidPage(
                           multiple = TRUE ),
            selectizeInput("phenotype",
                           label="Phenotype",
-                          choices = unique(pheno$condition),
+                          choices = unique(pheno$phenotype_name),
                           multiple = FALSE),
            selectInput("depth_of_coverage", 
                        label = "Depth of coverage",
@@ -144,7 +135,7 @@ server <- function(input, output) {
     if(input$type_input == "Gene symbol") {
       geneS <- input$gene_symbol
     } else {
-      geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+      geneS <- as.character(unique(pheno[pheno$phenotype_name == input$phenotype, "gene_symbol"]))
     }
     tbl <- createMainTable(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     tbl <- tbl[ , seq(4)]
@@ -206,25 +197,23 @@ server <- function(input, output) {
   
   
   createPlot <- function() {
-    message("PLOT!", myValue$selected_gene == "")
-    message("PLOT!", myValue$selected_gene)
     if(myValue$selected_gene == "") {
       if(input$type_input == "Gene symbol") {
         geneS <- input$gene_symbol
       } else {
         message("hi!")
         message(input$phenotype)
-        geneS <- as.character(unique(pheno[pheno$condition == input$phenotype, "gene_symbol"]))
+        geneS <- as.character(unique(pheno[pheno$phenotype_name == input$phenotype, "gene_symbol"]))
       }
       selCCDS <- getCCDS(geneS[1], summary)
-      myValue$selected_gene <- paste0(geneS[1], "-", selCCDS)
+      myValue$selected_gene <- paste0(geneS[1], "-", selCCDS[1])
     }
     
     gene <- strsplit(myValue$selected_gene, "-")[[1]][1]
     selCCDS <- strsplit(myValue$selected_gene, "-")[[1]][2]
     
     #if(length(selCCDS) <= 9) {
-    message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(input$gene_symbol) )
+    message("[PLOT] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(gene) )
     
     idx <- 0 
     if (input$depth_of_coverage == "10x") {

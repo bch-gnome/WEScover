@@ -225,15 +225,15 @@ createGPT <- function(row, main_table, gtrM) {
 
 createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
   selCCDS <- getCCDS(geneS, summary)
-  # if(length(selCCDS) <= 9) {
-  #   data.frame()
-  # } else {
-    message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
-    idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
-    xx <- do.call(rbind, lapply(geneS, function(geneS) {
-      selCCDS <- getCCDS(geneS, summary)
+
+  message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
+  idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
+  xx <- do.call(rbind, lapply(geneS, function(gene) {
+    message(gene)
+    selCCDS <- getCCDS(gene, summary)
+    if(length(selCCDS) > 0) {
       GS <- gtrS[selCCDS, "gene"]
-      GPT <- length(unique(gtrM[gtrM$GeneSymbol == geneS, "AccessionVersion"]))
+      GPT <- length(unique(gtrM[gtrM$GeneSymbol == gene, "AccessionVersion"]))
       MM <- globalMean(idx, selCCDS, summary)
       data.frame(
         A = GS,
@@ -248,10 +248,17 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
         I = paste(round(MM$SAS * 100, 0), " (", round(MM$SAS.MI * 100, 0), "-", round(MM$SAS.MA * 100, 0), ")", sep=""),
         stringsAsFactors = FALSE
       )
-    }))
-    colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (min-max)", 
-                      "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
-    rownames(xx) <- seq(nrow(xx))
-    xx
-  # }
+    } else {
+      data.frame(
+        A = gene, B = NA, C = NA, D = NA,
+        E = NA, F = NA, G = NA, H = NA,
+        I = NA, stringsAsFactors = FALSE
+      )
+    }
+  }))
+  colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (min-max)", 
+                    "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
+  rownames(xx) <- seq(nrow(xx))
+  xx
+
 }
