@@ -40,3 +40,6 @@ rsconnect/
 # Added to do not include data and coverage_plots in teh repository
 data/
 coverage_plots/
+
+# Not include DS
+.DS_Store
