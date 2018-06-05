@@ -287,6 +287,7 @@ server <- function(input, output, session) {
     dta$Population <- as.character(dta$Population)
     dta$variable <- as.character(dta$variable)
     dta$value <- as.numeric(dta$value)
+    dta$GeneSymbol <- myValue$gene
     
     gAD <- gnomad_exome[selCCDS, idx]
     p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
