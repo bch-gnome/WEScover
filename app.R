@@ -18,6 +18,7 @@ library(fst)
 
 gene_symbol <- read.fst("data/gene_symbol.fst")
 gnomad_exome <- read.fst("data/gnomad_exome.fst")
+row.names(gnomad_exome)<-gnomad_exome$V1
 summary <- read.fst("data/summary.fst")
 gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
@@ -32,6 +33,7 @@ ui <- fluidPage(
   useShinyjs(),
   #theme = shinytheme("cerulean"),
   #titlePanel("WEScover"),
+  tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   navbarPage("WEScover",
     tabPanel("Report",
       sidebarLayout(position = "left",
@@ -139,7 +141,7 @@ server <- function(input, output, session) {
   # observer to capture detail buttons in the main table
   observeEvent(input$detail_button, {
     selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
-    message(paste('click on detail ', selectedRow))
+    #message(paste('click on detail ', selectedRow))
     geneS <- as.character(main_table()[selectedRow, 1])
     
     myValue$summary_table <<- 
@@ -150,7 +152,7 @@ server <- function(input, output, session) {
     myValue$gene <<- geneS
     myValue$ccds <<- main_table()[selectedRow, 2]
     fileAD <- 
-      paste0("/opt/shiny-server/samples/sample-apps/WEScover/coverage_plots/", myValue$ccds, ".png")
+      paste0("coverage_plots/", myValue$ccds, ".png")
     if(file.exists(fileAD)) {
       myValue$gnomAD_plot <<- list(
         src = fileAD,
@@ -160,7 +162,7 @@ server <- function(input, output, session) {
         alt = paste0("gnomAD coverage for ", myValue$ccds))
     } else {
       myValue$gnomAD_plot <<- list(
-        src = "/opt/shiny-server/samples/sample-apps/WEScover/coverage_plots/NO_CCDS_GAD.png",
+        src = "coverage_plots/NO_CCDS_GAD.png",
         contentType = 'image/png',
         width = "100%",
         #height = 300,
@@ -219,10 +221,15 @@ server <- function(input, output, session) {
       tabsetPanel(type="tabs",
         tabPanel("Population summary",
           dataTableOutput('summary_table')),
-        tabPanel("Violin per population",
-                 plotOutput("violin_population")),
-        tabPanel("gnomAD coverage",
-                 imageOutput("gnomAD_plot")),
+        tabPanel("Coverage plots",
+                 fluidRow(align="center",
+                   column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
+                   column(8, imageOutput("gnomAD_plot"))
+                 )),
+#        tabPanel("Violin per population",
+#                 plotOutput("violin_population")),
+#        tabPanel("gnomAD coverage",
+#                 imageOutput("gnomAD_plot")),
         tabPanel("Gene panels",
                  dataTableOutput('GPT_table'))
       ),
@@ -252,6 +259,7 @@ server <- function(input, output, session) {
   
   createPlot <- function(gene, selCCDS) {
     message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
+    selCCDS<-as.character(selCCDS)
     
     idx <- 0 
     if (input$depth_of_coverage == "10x") {
@@ -298,8 +306,10 @@ server <- function(input, output, session) {
       facet_wrap(GeneSymbol~CCDS) +
       geom_hline(yintercept=gAD, colour="black", show.legend = T) +
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-      ylab("Breadth of coverage")
-    
+      ylab("Breadth of coverage") + 
+      theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
+    message("[PLOT] ", unique(dta$GeneSymbol), ", ", class(dta$GeneSymbol))
+
     #ggplotly(p1)
     p1
   }
