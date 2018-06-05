@@ -110,13 +110,16 @@ server <- function(input, output, session) {
   
   observeEvent (input$fGPT,{
     listPhe <- gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ]
-    updateSelectizeInput(session, 'gpt', choices = listPhe, server = TRUE,
+    updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE,
                          label = "GPT name (filtered)")
+    listGenes <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
+    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
+                         label = "Gene symbol (filtered)")
   })
   
   observeEvent (input$fGenes,{
     listGenes <- gpt$gene_symbol[ gpt$test_name %in% as.character(input$gpt) ]
-    updateSelectizeInput(session, 'gene_symbol', choices = listGenes, server = TRUE,
+    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
                          label = "Gene symbol (filtered)")
   })
   
@@ -181,8 +184,8 @@ server <- function(input, output, session) {
     
     if(length(input$phen) != 0) {
       message("OK")
-      listPhe <- gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ]
-      geneP <- as.character(unique(gpt[gpt$test_name %in% listPhe, "gene_symbol"]))
+      #input <- list(pehn = "Tuberous sclerosis 1")
+      geneP <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
       message(length(geneP))
       geneS <- c(geneS, geneP)
     }
