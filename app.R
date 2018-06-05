@@ -24,8 +24,8 @@ gtrS <- read.fst("data/gtrS.fst")
 gpt <- read.fst("data/gpt.fst")
 #genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
 tP <- read.fst("data/test_to_pheno.fst")
-
-
+# tP2 <- tP[tP$phenotype_name == "Tuberous sclerosis 1",]
+# unique(gpt[gpt$GTR_accession %in% tP2$AccessionVersion,"gene_symbol"])
 
 # Define UI ----
 ui <- fluidPage(
@@ -170,14 +170,6 @@ server <- function(input, output, session) {
   # create reactive main table
   main_table <- reactive({
     geneS <- c()
-    if (length(input$gene_symbol) != 0) {
-      geneS <- c(geneS, input$gene_symbol)
-    }
-    
-    if (length(input$gpt) != 0) {
-      geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
-      geneS <- c(geneS, geneG)
-    }
     
     if(length(input$phen) != 0) {
       message("OK")
@@ -185,6 +177,15 @@ server <- function(input, output, session) {
       geneP <- as.character(unique(gpt[gpt$test_name %in% listPhe, "gene_symbol"]))
       message(length(geneP))
       geneS <- c(geneS, geneP)
+    }
+
+    if (length(input$gpt) != 0) {
+      geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
+      geneS <- c(geneS, geneG)
+    }
+    
+    if (length(input$gene_symbol) != 0) {
+      geneS <- c(geneS, input$gene_symbol)
     }
     
     geneS <- unique(geneS)
@@ -291,7 +292,7 @@ server <- function(input, output, session) {
     
     gAD <- gnomad_exome[selCCDS, idx]
     p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
-      theme_bw() + geom_violin(outlier.shape = NA)  +
+      theme_bw() + geom_violin()  +
       facet_wrap(GeneSymbol~CCDS) +
       geom_hline(yintercept=gAD, colour="black", show.legend = T) +
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
