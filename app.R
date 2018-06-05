@@ -153,7 +153,7 @@ server <- function(input, output, session) {
     }
     
     if (length(input$gpt) != 0) {
-      geneP <- as.character(unique(gpt[gpt$test_name == input$gpt, "gene_symbol"]))
+      geneP <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneP)
     }
     
