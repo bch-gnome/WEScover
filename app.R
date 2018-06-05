@@ -23,6 +23,9 @@ gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
 gpt <- read.fst("data/gpt.fst")
 #genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
+tP <- read.fst("data/test_to_pheno.fst")
+
+
 
 # Define UI ----
 ui <- fluidPage(
@@ -34,6 +37,16 @@ ui <- fluidPage(
       sidebarLayout(position = "left",
       sidebarPanel(
               tags$h2("User input"),
+              
+              div(style="display: inline-block;vertical-align:baseline; width: 70%;",
+                  selectizeInput("phen",
+                                 label="Phenotype",
+                                 choices = NULL,
+                                 multiple = TRUE)
+              ),
+              div(style="display: inline-block;vertical-align:baseline; width: 25%;",
+                  actionButton("fGPT", "Filter")
+              ),
               
               div(style="display: inline-block;vertical-align:baseline; width: 70%;",
                   selectizeInput("gpt",
@@ -82,14 +95,23 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output, session) {
   
+  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
   updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
   
   observeEvent (input$clear,{
+    updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
     updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE,
                          label = "Gene symbol")
-    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE,
+                         label = "GPT name")
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
+  })
+  
+  observeEvent (input$fGPT,{
+    listPhe <- gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ]
+    updateSelectizeInput(session, 'gpt', choices = listPhe, server = TRUE,
+                         label = "GPT name (filtered)")
   })
   
   observeEvent (input$fGenes,{
@@ -153,7 +175,15 @@ server <- function(input, output, session) {
     }
     
     if (length(input$gpt) != 0) {
-      geneP <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
+      geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
+      geneS <- c(geneS, geneG)
+    }
+    
+    if(length(input$phen) != 0) {
+      message("OK")
+      listPhe <- gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ]
+      geneP <- as.character(unique(gpt[gpt$test_name %in% listPhe, "gene_symbol"]))
+      message(length(geneP))
       geneS <- c(geneS, geneP)
     }
     
