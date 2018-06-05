@@ -225,45 +225,45 @@ createGPT <- function(row, main_table, gtrM) {
   tbl
 }
 
-createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
-  selCCDS <- getCCDS(geneS, summary)
-
-  message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
-  idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
-  xx <- do.call(rbind, lapply(geneS, function(gene) {
-    message(gene)
-    selCCDS <- getCCDS(gene, summary)
-    if(length(selCCDS) > 0) {
-      GS <- gtrS[selCCDS, "gene"]
-      GPT <- length(unique(gtrM[gtrM$GeneSymbol == gene, "AccessionVersion"]))
-      MM <- globalMean(idx, selCCDS, summary)
-      data.frame(
-        A = GS,
-        B = selCCDS,
-        C = GPT,
-        #D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
-        D = round(MM$GLOBAL * 100, 0),
-        E = paste(round(MM$AFR * 100, 0), " (", round(MM$AFR.MI * 100, 0), "-", round(MM$AFR.MA * 100, 0), ")", sep=""),
-        F = paste(round(MM$AMR * 100, 0), " (", round(MM$AMR.MI * 100, 0), "-", round(MM$AMR.MA * 100, 0), ")", sep=""),
-        G = paste(round(MM$EAS * 100, 0), " (", round(MM$EAS.MI * 100, 0), "-", round(MM$EAS.MA * 100, 0), ")", sep=""),
-        H = paste(round(MM$EUR * 100, 0), " (", round(MM$EUR.MI * 100, 0), "-", round(MM$EUR.MA * 100, 0), ")", sep=""),
-        I = paste(round(MM$SAS * 100, 0), " (", round(MM$SAS.MI * 100, 0), "-", round(MM$SAS.MA * 100, 0), ")", sep=""),
-        stringsAsFactors = FALSE
-      )
-    } else {
-      data.frame(
-        A = gene, B = NA, C = NA, D = NA,
-        E = NA, F = NA, G = NA, H = NA,
-        I = NA, stringsAsFactors = FALSE
-      )
-    }
-  }))
-  colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (%)", 
-                    "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)")
-  rownames(xx) <- seq(nrow(xx))
-  xx
-
-}
+# createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
+#   selCCDS <- getCCDS(geneS, summary)
+# 
+#   message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
+#   idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
+#   xx <- do.call(rbind, lapply(geneS, function(gene) {
+#     message(gene)
+#     selCCDS <- getCCDS(gene, summary)
+#     if(length(selCCDS) > 0) {
+#       GS <- gtrS[selCCDS, "gene"]
+#       GPT <- length(unique(gtrM[gtrM$GeneSymbol == gene, "AccessionVersion"]))
+#       MM <- globalMean(idx, selCCDS, summary)
+#       data.frame(
+#         A = GS,
+#         B = selCCDS,
+#         C = GPT,
+#         #D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
+#         D = round(MM$GLOBAL * 100, 0),
+#         E = paste(round(MM$AFR * 100, 0), " (", round(MM$AFR.MI * 100, 0), "-", round(MM$AFR.MA * 100, 0), ")", sep=""),
+#         F = paste(round(MM$AMR * 100, 0), " (", round(MM$AMR.MI * 100, 0), "-", round(MM$AMR.MA * 100, 0), ")", sep=""),
+#         G = paste(round(MM$EAS * 100, 0), " (", round(MM$EAS.MI * 100, 0), "-", round(MM$EAS.MA * 100, 0), ")", sep=""),
+#         H = paste(round(MM$EUR * 100, 0), " (", round(MM$EUR.MI * 100, 0), "-", round(MM$EUR.MA * 100, 0), ")", sep=""),
+#         I = paste(round(MM$SAS * 100, 0), " (", round(MM$SAS.MI * 100, 0), "-", round(MM$SAS.MA * 100, 0), ")", sep=""),
+#         stringsAsFactors = FALSE
+#       )
+#     } else {
+#       data.frame(
+#         A = gene, B = NA, C = NA, D = NA,
+#         E = NA, F = NA, G = NA, H = NA,
+#         I = NA, stringsAsFactors = FALSE
+#       )
+#     }
+#   }))
+#   colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (%)", 
+#                     "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)")
+#   rownames(xx) <- seq(nrow(xx))
+#   xx
+# 
+# }
 
 # Jeff's versions
 
@@ -313,7 +313,7 @@ createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
     }
     xx <- genes_by_ccds_id[genes_by_ccds_id$gene_symbol %in% geneS, colS]
     xx <- xx[order(xx[, 3]), ]
-    colnames(xx) <- c("Gene Symbol", "CCDS", "Global mean", "Global min", "Global max", "AFR (%)", 
+    colnames(xx) <- c("Gene Symbol", "CCDS", "Global coverage (mean, %)", "Global coverage (min, %)", "Global coverage (max, %)", "AFR (%)", 
                       "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)")
     rownames(xx) <- seq(nrow(xx))
     xx
