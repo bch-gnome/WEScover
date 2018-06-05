@@ -295,7 +295,7 @@ server <- function(input, output, session) {
       geom_hline(yintercept=gAD, colour="black", show.legend = T) +
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage")
-    
+    ?ggplot
     #ggplotly(p1)
     p1
   }
