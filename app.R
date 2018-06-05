@@ -34,21 +34,28 @@ ui <- fluidPage(
       sidebarLayout(position = "left",
       sidebarPanel(
               tags$h2("User input"),
+              
+              div(style="display: inline-block;vertical-align:baseline; width: 70%;",
+                  selectizeInput("gpt",
+                             label="GPT name",
+                             choices = NULL,
+                             multiple = TRUE)
+                ),
+              div(style="display: inline-block;vertical-align:baseline; width: 25%;",
+                  actionButton("fGenes", "Filter")
+                ),
+              
               selectizeInput("gene_symbol",
-                              label = "Gene symbol",
-                              choices = NULL,
-                              multiple = TRUE),
-              selectizeInput("gpt",
-                              label="Test name",
-                              choices = NULL,
-                              multiple = TRUE),
+                             label = "Gene symbol",
+                             choices = NULL,
+                             multiple = TRUE),
                selectInput("depth_of_coverage", 
                            label = "Depth of coverage",
                            choices = c("10x", "20x", "30x"),
                            selected = "20x")
                ,
-               actionButton("update", "Submit query"),
-               actionButton("resetInputs", "Clear inputs")
+               actionButton("update", "Submit query", class = "btn-primary"),
+               actionButton("clear", "Clear inputs", class = "btn-secondary")
         ),
         mainPanel(
                dataTableOutput('tableMain')  
@@ -72,12 +79,24 @@ ui <- fluidPage(
   # )
 )
 
-
 # Define server logic ----
 server <- function(input, output, session) {
   
   updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
-  updateSelectizeInput(session, 'gpt', choices =sort(unique(gpt$test_name)), server = TRUE)
+  updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+  
+  observeEvent (input$clear,{
+    updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE,
+                         label = "Gene symbol")
+    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+    updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
+  })
+  
+  observeEvent (input$fGenes,{
+    listGenes <- gpt$gene_symbol[ gpt$test_name %in% as.character(input$gpt) ]
+    updateSelectizeInput(session, 'gene_symbol', choices = listGenes, server = TRUE,
+                         label = "Gene symbol (filtered)")
+  })
   
   # generator of buttons for the main table
   shinyInput <- function(FUN, len, id, ...) {
@@ -88,11 +107,9 @@ server <- function(input, output, session) {
     inputs
   }
   
-  
   # list of global values
   myValue <- reactiveValues(summary_table = NA, GPT_table = NA, 
     violon_population = NA, gene = "", ccds="", gnomAD_plot="")
-  
   
   # observer to capture detail buttons in the main table
   observeEvent(input$detail_button, {
