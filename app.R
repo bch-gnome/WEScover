@@ -6,49 +6,59 @@ library(DT)
 library(plotly)
 library(reshape2)
 library(RColorBrewer)
-#install.packages("shinyBS")
+
 # laod functions
 source("function.R")
 
+library(data.table)
+setDTthreads(18)
+
 # load data
-gene_symbol <- readRDS("../data/gene_symbol.rds")
-gnomad_exome <- read.delim("../data/gnomad_exome.txt", header = F, stringsAsFactors = FALSE, colClasses = c("character","numeric","numeric","numeric"))
-rownames(gnomad_exome) <- gnomad_exome$V1
-summary <- readRDS("../data/summary.rds")
-gtrM <- read.delim("../data/GTR_table.txt")
-gtrS <- read.delim("../data/GTR_summary.txt")
-rownames(gtrS) <- gtrS$ccds_id
-pheno <- readRDS("../data/phenotypes.rds")
-genes_by_ccds_id <- readRDS('../data/genes_by_ccds_id.rds')
+library(fst)
+
+gene_symbol <- read.fst("data/gene_symbol.fst")
+gnomad_exome <- read.fst("data/gnomad_exome.fst")
+row.names(gnomad_exome)<-gnomad_exome$V1
+summary <- read.fst("data/summary.fst")
+gtrM <- read.fst("data/gtrM.fst")
+gtrS <- read.fst("data/gtrS.fst")
+gpt <- read.fst("data/gpt.fst")
+#genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
 
 # Define UI ----
 ui <- fluidPage(
+  useShinyjs(),
   #theme = shinytheme("cerulean"),
   #titlePanel("WEScover"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   navbarPage("WEScover",
     tabPanel("Report",
       sidebarLayout(position = "left",
-      #fluidRow(
-      #  column(3,
-      #      wellPanel(
       sidebarPanel(
               tags$h2("User input"),
-               selectizeInput("gene_symbol", 
-                              label = "Gene symbol",
-                              choices = gene_symbol,
-                              multiple = TRUE ),
-               selectizeInput("phenotype",
-                              label="Phenotype",
-                              choices = sort(unique(pheno$phenotype_name)),
-                              multiple = TRUE),
+              
+              div(style="display: inline-block;vertical-align:baseline; width: 70%;",
+                  selectizeInput("gpt",
+                             label="GPT name",
+                             choices = NULL,
+                             multiple = TRUE)
+                ),
+              div(style="display: inline-block;vertical-align:baseline; width: 25%;",
+                  actionButton("fGenes", "Filter")
+                ),
+              
+              selectizeInput("gene_symbol",
+                             label = "Gene symbol",
+                             choices = NULL,
+                             multiple = TRUE),
                selectInput("depth_of_coverage", 
                            label = "Depth of coverage",
                            choices = c("10x", "20x", "30x"),
-                           selected = "20x"),
-               actionButton("update", "Submit query")
+                           selected = "20x")
+               ,
+               actionButton("update", "Submit query", class = "btn-primary"),
+               actionButton("clear", "Clear inputs", class = "btn-secondary")
         ),
-        #column(9,
         mainPanel(
                dataTableOutput('tableMain')  
         )
@@ -71,9 +81,24 @@ ui <- fluidPage(
   # )
 )
 
-
 # Define server logic ----
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
+  updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+  
+  observeEvent (input$clear,{
+    updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE,
+                         label = "Gene symbol")
+    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+    updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
+  })
+  
+  observeEvent (input$fGenes,{
+    listGenes <- gpt$gene_symbol[ gpt$test_name %in% as.character(input$gpt) ]
+    updateSelectizeInput(session, 'gene_symbol', choices = listGenes, server = TRUE,
+                         label = "Gene symbol (filtered)")
+  })
   
   # generator of buttons for the main table
   shinyInput <- function(FUN, len, id, ...) {
@@ -84,10 +109,9 @@ server <- function(input, output) {
     inputs
   }
   
-  
   # list of global values
-  myValue <- reactiveValues(summary_table = NA, GPT_table = NA, violon_population = NA, gene = "", ccds="", gnomAD_plot="")
-  
+  myValue <- reactiveValues(summary_table = NA, GPT_table = NA, 
+    violon_population = NA, gene = "", ccds="", gnomAD_plot="")
   
   # observer to capture detail buttons in the main table
   observeEvent(input$detail_button, {
@@ -97,14 +121,13 @@ server <- function(input, output) {
     
     myValue$summary_table <<- 
       createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
-    #message("MODAL:",colnames(myValue$summary_table))
     myValue$GPT_table <<- 
       createGPT(selectedRow, main_table(), gtrM)
-    #message("MODAL:",colnames(myValue$GPT_table))
     myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
     myValue$gene <<- geneS
     myValue$ccds <<- main_table()[selectedRow, 2]
-    fileAD <- paste0("../data/coverage_plots/", myValue$ccds, ".png")
+    fileAD <- 
+      paste0("coverage_plots/", myValue$ccds, ".png")
     if(file.exists(fileAD)) {
       myValue$gnomAD_plot <<- list(
         src = fileAD,
@@ -114,7 +137,7 @@ server <- function(input, output) {
         alt = paste0("gnomAD coverage for ", myValue$ccds))
     } else {
       myValue$gnomAD_plot <<- list(
-        src = "../data/coverage_plots/NO_CCDS_GAD.png",
+        src = "coverage_plots/NO_CCDS_GAD.png",
         contentType = 'image/png',
         width = "100%",
         #height = 300,
@@ -131,16 +154,18 @@ server <- function(input, output) {
       geneS <- c(geneS, input$gene_symbol)
     }
     
-    if (length(input$phenotype) != 0) {
-      geneP <- as.character(unique(pheno[pheno$phenotype_name == input$phenotype, "gene_symbol"]))
+    if (length(input$gpt) != 0) {
+      geneP <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneP)
     }
     
     geneS <- unique(geneS)
     tbl <- createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     if(ncol(tbl) > 0) {
-      tbl <- tbl[ , seq(5)]
-      tbl$Action <- shinyInput(actionButton, nrow(tbl), 'button_', label = "Detail", onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
+      tbl <- tbl[ , c(1:3,11:12)]
+      tbl$Action <- shinyInput(actionButton, nrow(tbl), 'button_', 
+                               label = "Detail", 
+                               onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
     }
     tbl
   })
@@ -201,6 +226,7 @@ server <- function(input, output) {
   
   createPlot <- function(gene, selCCDS) {
     message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
+    selCCDS<-as.character(selCCDS)
     
     idx <- 0 
     if (input$depth_of_coverage == "10x") {
@@ -240,15 +266,16 @@ server <- function(input, output) {
     dta$variable <- as.character(dta$variable)
     dta$value <- as.numeric(dta$value)
     
-    gAD <- gnomad_exome[as.character(selCCDS), idx]
-    p1 <<- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
+    gAD <- gnomad_exome[selCCDS, idx]
+    p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
       theme_bw() + geom_violin(outlier.shape = NA)  +
       facet_wrap(GeneSymbol~CCDS) +
       geom_hline(yintercept=gAD, colour="black", show.legend = T) +
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
-    #message("[PLOT] ", gnomad_exome[ selCCDS, idx ], " ", idx, " ", selCCDS, " ", which(row.names(gnomad_exome) == selCCDS), " ", class(selCCDS), " ", as.numeric(selCCDS))
+    message("[PLOT] ", unique(dta$GeneSymbol), ", ", class(dta$GeneSymbol))
+
     #ggplotly(p1)
     p1
   }
