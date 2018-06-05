@@ -35,3 +35,8 @@ vignettes/*.pdf
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
 .Rproj.user
+
+
+# Added to do not include data and coverage_plots in teh repository
+data/
+coverage_plots/
