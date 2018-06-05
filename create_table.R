@@ -4,10 +4,10 @@ GTR_20x <- read.delim("../../coverage_tables/GTR_20x.txt", header = T, stringsAs
 GTR_30x <- read.delim("../../coverage_tables/GTR_30x.txt", header = T, stringsAsFactors = F)
 
 source("function.R")
-
+pheno <- readRDS("../data/phenotypes.rds")
 gene_symbol <- readRDS("data/gene_symbol.rds")
 gnomad_exome <- readRDS("data/gnomad_exome.rds")
-
+colnames(final)
 summary <- readRDS("../data/summary.rds")
 x <- as.data.frame(table(summary$gene), stringsAsFactors = F)
 y <- as.data.frame(table(GTR$GeneSymbol), stringsAsFactors = F)
@@ -329,3 +329,10 @@ colnames(new) <- c("Gene symbol", "CCDS IDs", "Number of CCDS IDs", "GTR Panels"
                    "EUR 10x (min - max)", "EUR 20x (min - max)", "EUR 30x (min - max)",
                    "SAS 10x (min - max)", "SAS 20x (min - max)", "SAS 30x (min - max)")
 saveRDS(new, "../data/master_table.rds")
+
+### making gene-condition table
+library(dplyr)
+test_condition_gene <- read.delim("test_condition_gene.txt", header = T, stringsAsFactors = F)
+
+full_join(genes_10x, targets, by = "gene_symbol")
+colnames(test_condition_gene)

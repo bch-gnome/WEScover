@@ -1,3 +1,5 @@
+genes_by_ccds_id <- readRDS('../data/genes_by_ccds_id.rds')
+
 getCCDS <- function(geneN, sm) {
   #message("getCCDS - ", paste(geneN, collapse = ", "))
   unlist(lapply(geneN, function(x) {
@@ -256,9 +258,138 @@ createMainTable <- function(geneS, depth, summary, gtrM, gtrS) {
       )
     }
   }))
-  colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (min-max)", 
-                    "AMR (min-max)", "EAS (min-max)", "EUR (min-max)", "SAS (min-max)")
+  colnames(xx) <- c("Gene Symbol", "CCDS", "Gene Panel Testing", "GM", "AFR (%)", 
+                    "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)")
   rownames(xx) <- seq(nrow(xx))
   xx
 
+}
+
+# Jeff's versions
+
+createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
+  # selCCDS <- getCCDS(geneS, summary)
+  # 
+  # message("[TABLE] Number of CCDS: ", length(selCCDS), "; Number of genes:", length(geneS) )
+  # idx <- ifelse(depth == "10x", 3, ifelse(depth == "20x", 4, 5))
+  # xx <- do.call(rbind, lapply(geneS, function(gene) {
+  #   message(gene)
+  #   selCCDS <- getCCDS(gene, summary)
+  #   if(length(selCCDS) > 0) {
+  #     GS <- gtrS[selCCDS, "gene"]
+  #     GPT <- length(unique(gtrM[gtrM$GeneSymbol == gene, "AccessionVersion"]))
+  #     MM <- globalMean2(idx, selCCDS, summary)
+  #     data.frame(
+  #       A = GS,
+  #       B = selCCDS,
+  #       C = GPT,
+  #       #D = paste(round(MM$GLOBAL * 100, 0), " (", round(MM$GLOBAL.MI * 100, 0), "-", round(MM$GLOBAL.MA * 100, 0), ")", sep=""),
+  #       D = MM$GLOBAL,
+  #       E = paste(MM$AFR, " (", MM$AFR.MI, "-", MM$AFR.MA, ")", sep=""),
+  #       F = paste(MM$AMR, " (", MM$AMR.MI, "-", MM$AMR.MA, ")", sep=""),
+  #       G = paste(MM$EAS, " (", MM$EAS.MI, "-", MM$EAS.MA, ")", sep=""),
+  #       H = paste(MM$EUR, " (", MM$EUR.MI, "-", MM$EUR.MA, ")", sep=""),
+  #       I = paste(MM$SAS, " (", MM$SAS.MI, "-", MM$SAS.MA, ")", sep=""),
+  #       stringsAsFactors = FALSE
+  #     )
+  #   } else {
+  #     data.frame(
+  #       A = gene, B = NA, C = NA, D = NA,
+  #       E = NA, F = NA, G = NA, H = NA,
+  #       I = NA, stringsAsFactors = FALSE
+  #     )
+  #   }
+  # }))
+  if (length(geneS) > 0) {
+    if(depth == "10x") {
+      colS <- c("gene_symbol", "ccds_id", "global_mean_10x", "global_min_10x", "global_max_10x", "AFR_mean_10x", "AMR_mean_10x", "EAS_mean_10x",
+                "EUR_mean_10x", "SAS_mean_10x")
+    } else if(depth == "20x") {
+      colS <- c("gene_symbol", "ccds_id", "global_mean_20x", "global_min_20x", "global_max_20x","AFR_mean_20x", "AMR_mean_20x", "EAS_mean_20x",
+              "EUR_mean_20x", "SAS_mean_20x")
+    } else {
+      colS <- c("gene_symbol", "ccds_id", "global_mean_30x","global_min_30x", "global_max_30x", "AFR_mean_30x", "AMR_mean_30x", "EAS_mean_30x",
+                "EUR_mean_30x", "SAS_mean_30x")
+    }
+    xx <- genes_by_ccds_id[genes_by_ccds_id$gene_symbol %in% geneS, colS]
+    xx <- xx[order(xx[, 3]), ]
+    colnames(xx) <- c("Gene Symbol", "CCDS", "Global mean", "Global min", "Global max", "AFR (%)", 
+                      "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)")
+    rownames(xx) <- seq(nrow(xx))
+    xx
+  } else {
+    data.frame()
+  }
+  
+}
+
+
+globalMean2 <- function(idx, ccds, summary) {
+  if(idx==3) {
+    load10x(summary)
+    list(
+      "AFR" = genes_by_ccds_id[ccds,"AFR_mean_10x"],
+      "AFR.MI" = genes_by_ccds_id[ccds,"AFR_min_10x"],
+      "AFR.MA" = genes_by_ccds_id[ccds,"AFR_max_10x"],
+      "AMR" = genes_by_ccds_id[ccds,"AMR_mean_10x"],
+      "AMR.MI" = genes_by_ccds_id[ccds,"AMR_min_10x"],
+      "AMR.MA" = genes_by_ccds_id[ccds,"AMR_max_10x"],
+      "EAS" = genes_by_ccds_id[ccds,"EAS_mean_10x"],
+      "EAS.MI" = genes_by_ccds_id[ccds,"EAS_min_10x"],
+      "EAS.MA" = genes_by_ccds_id[ccds,"EAS_max_10x"],
+      "EUR" = genes_by_ccds_id[ccds,"EUR_mean_10x"],
+      "EUR.MI" = genes_by_ccds_id[ccds,"EUR_min_10x"],
+      "EUR.MA" = genes_by_ccds_id[ccds,"EUR_max_10x"],
+      "SAS" = genes_by_ccds_id[ccds,"SAS_mean_10x"],
+      "SAS.MI" = genes_by_ccds_id[ccds,"SAS_min_10x"],
+      "SAS.MA" = genes_by_ccds_id[ccds,"SAS_max_10x"],
+      "GLOBAL"= genes_by_ccds_id[ccds,"global_mean_10x"],
+      "GLOBAL.MI"= genes_by_ccds_id[ccds,"global_min_10x"],
+      "GLOBAL.MA"= genes_by_ccds_id[ccds,"global_max_10x"]
+    )
+  } else if(idx == 4) {
+    load20x(summary)
+    list(
+      "AFR" = genes_by_ccds_id[ccds,"AFR_mean_20x"],
+      "AFR.MI" = genes_by_ccds_id[ccds,"AFR_min_20x"],
+      "AFR.MA" = genes_by_ccds_id[ccds,"AFR_max_20x"],
+      "AMR" = genes_by_ccds_id[ccds,"AMR_mean_20x"],
+      "AMR.MI" = genes_by_ccds_id[ccds,"AMR_min_20x"],
+      "AMR.MA" = genes_by_ccds_id[ccds,"AMR_max_20x"],
+      "EAS" = genes_by_ccds_id[ccds,"EAS_mean_20x"],
+      "EAS.MI" = genes_by_ccds_id[ccds,"EAS_min_20x"],
+      "EAS.MA" = genes_by_ccds_id[ccds,"EAS_max_20x"],
+      "EUR" = genes_by_ccds_id[ccds,"EUR_mean_20x"],
+      "EUR.MI" = genes_by_ccds_id[ccds,"EUR_min_20x"],
+      "EUR.MA" = genes_by_ccds_id[ccds,"EUR_max_20x"],
+      "SAS" = genes_by_ccds_id[ccds,"SAS_mean_20x"],
+      "SAS.MI" = genes_by_ccds_id[ccds,"SAS_min_20x"],
+      "SAS.MA" = genes_by_ccds_id[ccds,"SAS_max_20x"],
+      "GLOBAL"= genes_by_ccds_id[ccds,"global_mean_20x"],
+      "GLOBAL.MI"= genes_by_ccds_id[ccds,"global_min_20x"],
+      "GLOBAL.MA"= genes_by_ccds_id[ccds,"global_max_20x"]
+    )
+  } else if(idx == 5) {
+    load30x(summary)
+    list(
+      "AFR" = genes_by_ccds_id[ccds,"AFR_mean_30x"],
+      "AFR.MI" = genes_by_ccds_id[ccds,"AFR_min_30x"],
+      "AFR.MA" = genes_by_ccds_id[ccds,"AFR_max_30x"],
+      "AMR" = genes_by_ccds_id[ccds,"AMR_mean_30x"],
+      "AMR.MI" = genes_by_ccds_id[ccds,"AMR_min_30x"],
+      "AMR.MA" = genes_by_ccds_id[ccds,"AMR_max_30x"],
+      "EAS" = genes_by_ccds_id[ccds,"EAS_mean_30x"],
+      "EAS.MI" = genes_by_ccds_id[ccds,"EAS_min_30x"],
+      "EAS.MA" = genes_by_ccds_id[ccds,"EAS_max_30x"],
+      "EUR" = genes_by_ccds_id[ccds,"EUR_mean_30x"],
+      "EUR.MI" = genes_by_ccds_id[ccds,"EUR_min_30x"],
+      "EUR.MA" = genes_by_ccds_id[ccds,"EUR_max_30x"],
+      "SAS" = genes_by_ccds_id[ccds,"SAS_mean_30x"],
+      "SAS.MI" = genes_by_ccds_id[ccds,"SAS_min_30x"],
+      "SAS.MA" = genes_by_ccds_id[ccds,"SAS_max_30x"],
+      "GLOBAL"= genes_by_ccds_id[ccds,"global_mean_30x"],
+      "GLOBAL.MI"= genes_by_ccds_id[ccds,"global_min_30x"],
+      "GLOBAL.MA"= genes_by_ccds_id[ccds,"global_max_30x"]
+    )
+  }
 }
