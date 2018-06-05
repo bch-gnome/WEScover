@@ -23,10 +23,12 @@ summary <- read.fst("data/summary.fst")
 gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
 gpt <- read.fst("data/gpt.fst")
-#genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
+# genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
 tP <- read.fst("data/test_to_pheno.fst")
-
-
+tP$AccessionVersion <- as.character(tP$AccessionVersion)
+tP$test_name <- as.character(tP$test_name)
+tP$phenotype_name <- as.character(tP$phenotype_name)
+# length(unique(as.character(tP$phenotype_name[tP$AccessionVersion %in% gpt$GTR_accession[ gpt$gene_symbol == "SIK1" ]])))
 
 # Define UI ----
 ui <- fluidPage(
@@ -69,8 +71,8 @@ ui <- fluidPage(
                            choices = c("10x", "20x", "30x"),
                            selected = "20x")
                ,
-               actionButton("update", "Submit query", class = "btn-primary"),
-               actionButton("clear", "Clear inputs", class = "btn-secondary")
+               actionButton("clear", "Clear inputs", class = "btn-secondary"),
+              actionButton("update", "Submit query", class = "btn-primary")
         ),
         mainPanel(
                dataTableOutput('tableMain')  
@@ -111,7 +113,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent (input$fGPT,{
-    listPhe <- gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ]
+    listPhe <- unique(gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ])
     updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE,
                          label = "GPT name (filtered)")
     listGenes <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
@@ -177,14 +179,10 @@ server <- function(input, output, session) {
     geneS <- c()
     if (length(input$gene_symbol) != 0) {
       geneS <- c(geneS, input$gene_symbol)
-    }
-    
-    if (length(input$gpt) != 0) {
+    } else if (length(input$gpt) != 0) {
       geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneG)
-    }
-    
-    if(length(input$phen) != 0) {
+    } else if(length(input$phen) != 0) {
       message("OK")
       #input <- list(pehn = "Tuberous sclerosis 1")
       geneP <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
