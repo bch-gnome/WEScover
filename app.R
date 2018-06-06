@@ -25,15 +25,15 @@ gtrS <- read.fst("data/gtrS.fst")
 gpt <- read.fst("data/gpt.fst")
 # genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
 tP <- read.fst("data/test_to_pheno.fst")
-<<<<<<< HEAD
+
 # tP2 <- tP[tP$phenotype_name == "Tuberous sclerosis 1",]
 # unique(gpt[gpt$GTR_accession %in% tP2$AccessionVersion,"gene_symbol"])
-=======
+
 tP$AccessionVersion <- as.character(tP$AccessionVersion)
 tP$test_name <- as.character(tP$test_name)
 tP$phenotype_name <- as.character(tP$phenotype_name)
 # length(unique(as.character(tP$phenotype_name[tP$AccessionVersion %in% gpt$GTR_accession[ gpt$gene_symbol == "SIK1" ]])))
->>>>>>> 8b4a6599cd9c59ec11702c1edef28d203222f130
+
 
 # Define UI ----
 ui <- fluidPage(
@@ -67,17 +67,44 @@ ui <- fluidPage(
                   actionButton("fGenes", "Filter")
                 ),
               
-              selectizeInput("gene_symbol",
-                             label = "Gene symbol",
+              # selectizeInput("gene_symbol",
+              #                label = "Gene symbol",
+              #                choices = NULL,
+              #                multiple = TRUE),
+              selectizeInput("gene_symbol", "Gene symbol",
                              choices = NULL,
-                             multiple = TRUE),
+                             multiple = TRUE,
+                             options = list(
+                               splitOn = I("(function() { return /[,; ]/; })()"),
+                               create = I("function(input, callback){
+                                return {
+                                  value: input,
+                                  text: input
+                                  };
+                                }")
+                             ),
+                             width = '70%'
+                            ),
                selectInput("depth_of_coverage", 
                            label = "Depth of coverage",
                            choices = c("10x", "20x", "30x"),
-                           selected = "20x")
-               ,
-               actionButton("clear", "Clear inputs", class = "btn-secondary"),
-              actionButton("update", "Submit query", class = "btn-primary")
+                           selected = "20x",
+                           width = '70%'),
+        #       selectizeInput("x", "Choose:",
+        #                      letters,
+        #                      multiple = TRUE,
+        #                      options = list(
+        #                        splitOn = I("(function() { return /[, ]/; })()"),
+        #                        create = I("function(input, callback){
+        #   return {
+        #     value: input,
+        #     text: input
+        #    };
+        # }")
+        #                      )
+        #       ),
+        actionButton("clear", "Clear inputs", class = "btn-secondary"),
+        actionButton("update", "Submit query", class = "btn-primary")
         ),
         mainPanel(
                dataTableOutput('tableMain')  
@@ -104,13 +131,17 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output, session) {
   
-  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
-  updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
+  # updateSelectizeInput(session, 'x', choices = letters, server = TRUE)
+  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), 
+                       server = TRUE)
+    updateSelectizeInput(session, 'gene_symbol', 
+                       choices = gene_symbol$gene_symbol,
+                       server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
-  
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
-    updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE,
+    updateSelectizeInput(session, 'gene_symbol', 
+                         choices = gene_symbol$gene_symbol, server = TRUE,
                          label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE,
                          label = "GPT name")
@@ -180,24 +211,24 @@ server <- function(input, output, session) {
   })
   
   # create reactive main table
-  main_table <- reactive({
+  main_table <- reactive ({
     geneS <- c()
-<<<<<<< HEAD
     
     if(length(input$phen) != 0) {
-=======
+
     if (length(input$gene_symbol) != 0) {
       geneS <- c(geneS, input$gene_symbol)
     } else if (length(input$gpt) != 0) {
       geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneG)
     } else if(length(input$phen) != 0) {
->>>>>>> 8b4a6599cd9c59ec11702c1edef28d203222f130
+
       message("OK")
       #input <- list(pehn = "Tuberous sclerosis 1")
       geneP <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
       message(length(geneP))
       geneS <- c(geneS, geneP)
+    }
     }
 
     if (length(input$gpt) != 0) {
@@ -218,7 +249,7 @@ server <- function(input, output, session) {
                                onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
     }
     tbl
-  })
+    })
   
   # display reactive main table
   output$tableMain <- renderDataTable( {
@@ -242,7 +273,10 @@ server <- function(input, output, session) {
                  fluidRow(align="center",
                    column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
                    column(8, imageOutput("gnomAD_plot"))
-                 )),
+                 )
+                 # fluidRow(align="center",
+                 #          textOutput("gnomAD_address"))),
+        ),
 #        tabPanel("Violin per population",
 #                 plotOutput("violin_population")),
 #        tabPanel("gnomAD coverage",
@@ -270,9 +304,6 @@ server <- function(input, output, session) {
   output$gnomAD_plot <- renderImage({
     myValue$gnomAD_plot
   }, deleteFile = FALSE)
-  
-  
-  
   
   createPlot <- function(gene, selCCDS) {
     message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
@@ -323,19 +354,16 @@ server <- function(input, output, session) {
       facet_wrap(GeneSymbol~CCDS) +
       geom_hline(yintercept=gAD, colour="black", show.legend = T) +
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
-<<<<<<< HEAD
-      ylab("Breadth of coverage")
-    ?ggplot
-=======
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
     message("[PLOT] ", unique(dta$GeneSymbol), ", ", class(dta$GeneSymbol))
-
->>>>>>> 8b4a6599cd9c59ec11702c1edef28d203222f130
     #ggplotly(p1)
     p1
   }
 }
+
+
+
 
 # Run the app ----
 shinyApp(ui = ui, server = server)
