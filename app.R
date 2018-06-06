@@ -33,6 +33,8 @@ tP$AccessionVersion <- as.character(tP$AccessionVersion)
 tP$test_name <- as.character(tP$test_name)
 tP$phenotype_name <- as.character(tP$phenotype_name)
 # length(unique(as.character(tP$phenotype_name[tP$AccessionVersion %in% gpt$GTR_accession[ gpt$gene_symbol == "SIK1" ]])))
+## ccds id -> ensembl id (for coverage plot & link to gnomAD browser)
+ccds2ens<-readRDS("data/ccds_ens_map.rds")
 
 
 # Define UI ----
@@ -272,11 +274,16 @@ server <- function(input, output, session) {
         tabPanel("Coverage plots",
                  fluidRow(align="center",
                    column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
+<<<<<<< HEAD
                    column(8, imageOutput("gnomAD_plot"))
                  )
                  # fluidRow(align="center",
                  #          textOutput("gnomAD_address"))),
         ),
+=======
+                   column(8, tags$a(imageOutput("gnomAD_plot"),href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank"))
+                 )),
+>>>>>>> db201e22460e7ca882a0716f96afeb7ae0da3be5
 #        tabPanel("Violin per population",
 #                 plotOutput("violin_population")),
 #        tabPanel("gnomAD coverage",
@@ -356,7 +363,12 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
+<<<<<<< HEAD
     message("[PLOT] ", unique(dta$GeneSymbol), ", ", class(dta$GeneSymbol))
+=======
+    message("[PLOT] ", ccds2ens[ selCCDS, 2])
+
+>>>>>>> db201e22460e7ca882a0716f96afeb7ae0da3be5
     #ggplotly(p1)
     p1
   }
