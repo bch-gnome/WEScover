@@ -1,0 +1,59 @@
+<html>
+<body>
+<h3>0. Introduction</h3>
+
+<p>WEScover provides an interface where users can search phenotypes, targeted gene panel tests, or genes to check for consistent coverage across whole exome sequencing (WES) datasets. Breadth and depth of coverage data collected from the 1000 Genomes Project (1KGP) using the hg38 reference genome. Breadth of coverage refers to the proportion of gene that is covered at a fixed sequencing depth, the average number of times a given region has been sequenced by independent reads. Users may check for genes related to phenotypes of interest and determine whether they are comprehensively covered by WES. For example, if they find their genes have a mean breadth of coverage lower than 95% then they get may consider gene panels instead. These panels may be an alternative to WES to avoid potential false negatives for exons that are not well described by the former. This guide provides a detailed overview of the process of generating and viewing a report.</p>
+
+<h3>1. Using GTR</h3>
+
+<p>In this example, we illustrate how GTR can be used to determine the most appropriate genetic tests for nonalcoholic fatty liver disease (NAFLD).  First, the user must go to the GTR website (https://www.ncbi.nlm.nih.gov/gtr/) and select for a test search. There, query for condition/s and/or phenotype/s of interest, in this case NAFLD.</p>
+
+<p>This search will bring the user to its phenotype entry in GTR. The panels that may be used for this phenotype may be found by clicking the first link in the “Available tests” section. A table with a list of test names will be returned, and clicking on the Genes and analytes option will show genes included in these gene panel test (GPT).</p> 
+
+<p>PNPLA3 is the gene associated with NAFLD and five GTR registered genetic testings. Before deciding whether to recommend WES or genetic testing panels, users may check breadth of coverage of PNPLA3 and decide whether it is comprehensively covered by WES.</p>
+
+<h3>2. User input</h3>
+
+<p>The User input panel is set up such that queries to WEScover may be done by phenotype, gene panel tests (GPT), or gene symbol. Phenotypes, disease conditions that users may want to test for, may be typed into the first textbox. Pressing the filter button next to the phenotypes textbox will filter the database for all gene panels that test for the given phenotype, which may be seen by clicking the textbox for GPT. There is also a filter button next to this textbox which will return all genes that that are targeted by the queried tests. All fields contain an autocomplete setting that will help the users navigate quickly and easily find their phenotypes, tests, or gene symbols. Depth of coverage is fixed at 10x, 20x, or 30x, and may also be set in the User input panel. After all inputs are set, the Submit query button may be clicked.</p>
+
+<h3>3. Table</h3>
+
+<p>Breadth of coverage is reported for the exons of queried genes by their Consensus Coding Sequence identifier (CCDS ID). Clicking “Submit query” generates a table with the following columns:</p>
+
+<ul>
+<li>Gene symbol: Official symbol for the gene by HUGO Gene Nomenclature Committee (HGNC).</li>
+<li>CCDS ID</li> is the unique accession identifier in the CCDS project for the exon of a gene.
+<li>Global coverage reports the values mean, minimum, and maximum breadth of coverage, written as percentages, in three separate columns. These values were computed from five super population: African (AFR), Admixed American (AMR), East Asian (EAS), European (EUR), and SAS (South Asian). Mean coverage by population may be found in the Details section. Each row is colored in the following manner: green for global mean coverage greater than 99%, yellow for coverage between 99% and 95%, and red for coverage less than 95%.</li> 
+<li>Detail table provides more information in different tabs that are described in the next section.</li>
+</ul>
+<h3>4. Details</h3>
+
+<ul>
+<li>Population summary reports the mean breadth of coverage for each CCDS ID by super population. This information may be used to highlight differences in coverage between different super populations. For example, exons that are comprehensively covered by WES in Europeans may have a lower mean breadth of coverage in another ancestry, suggesting the use of gene panels instead.</li>
+
+<li>Coverage plots includes a violin plot shows the breadth of coverage distribution by super population. The black line in the plot reports the mean breadth of coverage from the Genome Aggregation Database (gnomAD) as a global estimate from large-scale data.</li> 
+
+<li>The second plot shows the breadth of coverage data from gnomAD for the hg19 reference genome. This coverage metrics is plotted as a proportion in the upper part and exons in the the lower part. Different sequencing depths are represented by different colors, where 10x is light blue, 20x is medium blue, and 30x is dark blue. A hyperlink to its entry in gnomAD is included by clicking on the image. Due to differences in gene models, where data collected from 1KGP is done on hg39, some CCDS transcripts do not have a corresponding gnomAD plot.</li>
+
+<li>Gene panels returns a list of all panels registered in GTR that target his CCDS by gene symbol. Each panel is listed by its unique accession version and provides a hyperlink to its entry in GTR when clicked.</li>
+</ul>
+<h3>5. Citations</h3>
+
+<p>Chang, W., Cheng, J., Allaire, J.J., Xie, J. and McPherson, J. (2017). shiny: Web Application Framework for R. R package version 1.0.5. https://CRAN.R- project.org/package=shiny
+
+<p>Kong, S.W., et al. Measuring coverage and accuracy of whole-exome sequencing in clinical context. Genet Med 2018.
+Lek, M., et al. Analysis of protein-coding genetic variation in 60,706 humans. Nature 2016;536(7616):285-291.
+
+<p>Meienberg, J., et al. New insights into the performance of human whole-exome capture platforms. Nucleic Acids Res 2015;43(11):e76.
+
+<p>Meynert, A.M., et al. Variant detection sensitivity and biases in whole genome and exome sequencing. BMC Bioinformatics 2014;15:247.
+
+<p>Pruitt, K.D., et al. The consensus coding sequence (CCDS) project: Identifying a common protein-coding gene set for the human and mouse genomes. Genome Res 2009;19(7):1316-1323.
+
+<p>Rubinstein, W.S., et al. The NIH genetic testing registry: a new, centralized database of genetic tests to enable access to comprehensive information and improve transparency. Nucleic Acids Res 2013;41(Database issue):D925-935.
+
+<p>Stavropoulos, D.J., et al. Whole Genome Sequencing Expands Diagnostic Utility and Improves Clinical Management in Pediatric Medicine. NPJ Genom Med 2016;1. Wang, J., et al. Diagnostic yield of clinical next-generation sequencing panels for epilepsy. JAMA Neurol 2014;71(5):650-651.
+
+<p>Wang, Q., et al. Novel metrics to measure coverage in whole exome sequencing datasets reveal local and global non-uniformity. Sci Rep 2017;7(1):885.
+</body>
+</html>

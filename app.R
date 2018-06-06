@@ -38,12 +38,13 @@ ccds2ens<-readRDS("data/ccds_ens_map.rds")
 
 
 # Define UI ----
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("flatly"),
   useShinyjs(),
   #theme = shinytheme("cerulean"),
   #titlePanel("WEScover"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
-  navbarPage("WEScover",
+  tags$style(type="text/css", "body {padding-top: 80px;}"),
+  navbarPage("WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Report",
       sidebarLayout(position = "left",
       sidebarPanel(
@@ -58,7 +59,7 @@ ui <- fluidPage(
               div(style="display: inline-block;vertical-align:baseline; width: 25%;",
                   actionButton("fGPT", "Filter")
               ),
-              
+
               div(style="display: inline-block;vertical-align:baseline; width: 70%;",
                   selectizeInput("gpt",
                              label="GPT name",
@@ -68,12 +69,8 @@ ui <- fluidPage(
               div(style="display: inline-block;vertical-align:baseline; width: 25%;",
                   actionButton("fGenes", "Filter")
                 ),
-              
-              # selectizeInput("gene_symbol",
-              #                label = "Gene symbol",
-              #                choices = NULL,
-              #                multiple = TRUE),
-              selectizeInput("gene_symbol", "Gene symbol",
+
+              selectizeInput("gene_symbol", label = "Gene symbol",
                              choices = NULL,
                              multiple = TRUE,
                              options = list(
@@ -87,35 +84,134 @@ ui <- fluidPage(
                              ),
                              width = '70%'
                             ),
-               selectInput("depth_of_coverage", 
+               selectInput("depth_of_coverage",
                            label = "Depth of coverage",
                            choices = c("10x", "20x", "30x"),
                            selected = "20x",
                            width = '70%'),
-        #       selectizeInput("x", "Choose:",
-        #                      letters,
-        #                      multiple = TRUE,
-        #                      options = list(
-        #                        splitOn = I("(function() { return /[, ]/; })()"),
-        #                        create = I("function(input, callback){
-        #   return {
-        #     value: input,
-        #     text: input
-        #    };
-        # }")
-        #                      )
-        #       ),
         actionButton("clear", "Clear inputs", class = "btn-secondary"),
         actionButton("update", "Submit query", class = "btn-primary")
+        
+        # different way of arranging?
+          
+          # fluidRow(
+          #   column(4, selectizeInput("phen",
+          #             label="Phenotype",
+          #             choices = NULL,
+          #             multiple = TRUE)
+          #     ),
+          #   column(6, offset = 1, actionButton("fGPT", "Filter")
+          #     )
+          #   ),
+          # fluidRow(
+          #   column(4, selectizeInput("gpt", label="GPT name",
+          #                                   choices = NULL,
+          #                                   multiple = TRUE)
+          #     ),
+          #   column(6, offset = 1, actionButton("fGenes", "Filter")
+          #     )
+          #   ),
+          # fluidRow(
+          #   column(8, selectizeInput("gene_symbol", label = "Gene symbol",
+          #                                           choices = NULL,
+          #                                           multiple = TRUE,
+          #                                           options = list(
+          #                                           splitOn = I("(function() { return /[,; ]/; })()"),
+          #                                           create = I("function(input, callback){
+          #                                                   return {
+          #                                                     value: input,
+          #                                                     text: input
+          #                                                     };
+          #                                                   }")
+          #                                            ),
+          #                                            width = '70%'
+          #       )
+          #     )
+          #   ),
+          # fluidRow(
+          #   column(8, selectInput("depth_of_coverage",
+          #                         label = "Depth of coverage",
+          #                         choices = c("10x", "20x", "30x"),
+          #                         selected = "20x",
+          #                         width = '70%'))
+          #     ),
+          #   fluidRow(
+          #     column(1, actionButton("clear", "Clear inputs", class = "btn-secondary"),
+          #     column(5, actionButton("update", "Submit query", class = "btn-primary")))
+          #   )
         ),
-        mainPanel(
-               dataTableOutput('tableMain')  
+          mainPanel(
+                 dataTableOutput('tableMain')
+          )
         )
+      ),
+      tabPanel("Help",
+               includeHTML("help.html")
       )
-    ),
-    tabPanel("Help"
+      )
     )
-  )#,
+        # different way of arranging?
+    #     fluidRow(
+    #       
+    #       column(8, div(style="display: inline-block;vertical-align:baseline; width: 70%;",
+    #                                selectizeInput("phen",
+    #                                               label="Phenotype",
+    #                                               choices = NULL,
+    #                                               multiple = TRUE)
+    #       )),
+    #       column(4, div(style="display: inline-block;vertical-align:baseline; width: 25%;",
+    #                     actionButton("fGPT", "Filter")
+    #              )
+    #       ),
+    #     fluidRow(
+    #       
+    #       column(8, div(style="display: inline-block;vertical-align:baseline; width: 70%;",
+    #                                   selectizeInput("gpt",
+    #                                                  label="GPT name",
+    #                                                  choices = NULL,
+    #                                                  multiple = TRUE)
+    #       )),
+    #       column(4, div(style="display: inline-block;vertical-align:baseline; width: 25%;",
+    #                                   actionButton("fGenes", "Filter")
+    #       )
+    #       )
+    #     ),
+    #     fluidRow(
+    #       column(8, selectizeInput("gene_symbol", label = "Gene symbol",
+    #                                              choices = NULL,
+    #                                              multiple = TRUE,
+    #                                              options = list(
+    #                                                splitOn = I("(function() { return /[,; ]/; })()"),
+    #                                                create = I("function(input, callback){
+    #                             return {
+    #                               value: input,
+    #                               text: input
+    #                               };
+    #                             }")
+    #                                              ),
+    #                                              width = '70%'
+    #       ))
+    #     ),
+    #     fluidRow(
+    #       column(8, selectInput("depth_of_coverage", 
+    #                                            label = "Depth of coverage",
+    #                                            choices = c("10x", "20x", "30x"),
+    #                                            selected = "20x",
+    #                                            width = '70%'))
+    #     ),
+    #     fluidRow(
+    #       column(4, actionButton("clear", "Clear inputs", class = "btn-secondary"),
+    #       column(8, actionButton("update", "Submit query", class = "btn-primary")))
+    #     ),
+    #     mainPanel(
+    #            dataTableOutput('tableMain')  
+    #     )
+    #   )
+    # ),
+    # tabPanel("Help",
+    #          includeHTML("data/help.html")
+    # )))
+  #,
   # tags$footer(title="© Boston Children's Hospital. All Rights Reserved.", 
   #   align = "right", 
   #   style = "
@@ -128,7 +224,6 @@ ui <- fluidPage(
   #     background-color: #DCDCDC;
   #     z-index: 1000;"
   # )
-)
 
 # Define server logic ----
 server <- function(input, output, session) {
@@ -274,16 +369,8 @@ server <- function(input, output, session) {
         tabPanel("Coverage plots",
                  fluidRow(align="center",
                    column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
-<<<<<<< HEAD
-                   column(8, imageOutput("gnomAD_plot"))
-                 )
-                 # fluidRow(align="center",
-                 #          textOutput("gnomAD_address"))),
-        ),
-=======
                    column(8, tags$a(imageOutput("gnomAD_plot"),href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank"))
                  )),
->>>>>>> db201e22460e7ca882a0716f96afeb7ae0da3be5
 #        tabPanel("Violin per population",
 #                 plotOutput("violin_population")),
 #        tabPanel("gnomAD coverage",
@@ -363,12 +450,8 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
-<<<<<<< HEAD
-    message("[PLOT] ", unique(dta$GeneSymbol), ", ", class(dta$GeneSymbol))
-=======
     message("[PLOT] ", ccds2ens[ selCCDS, 2])
 
->>>>>>> db201e22460e7ca882a0716f96afeb7ae0da3be5
     #ggplotly(p1)
     p1
   }
