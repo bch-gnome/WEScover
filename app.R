@@ -44,7 +44,16 @@ ui <- fluidPage(theme = shinytheme("flatly"),
   #titlePanel("WEScover"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;}"),
-  navbarPage("WEScover", position = "fixed-top", fluid = TRUE,
+  navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
+    tabPanel("Home",
+     absolutePanel( width = "60%", left = "15%", right = "15%",
+       wellPanel(
+         h4("WEScover"),
+         hr(),
+         p('WEScover provides an interface to check for consistent coverage across whole exome sequencing datasets. Breadth and depth of coverage data was collected from the 1000 Genomes Project (1KGP) using the hg38 reference genome')
+       )
+     )
+    ),
     tabPanel("Query",
       sidebarLayout(position = "left",
       sidebarPanel(
