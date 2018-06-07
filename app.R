@@ -6,6 +6,7 @@ library(DT)
 library(plotly)
 library(reshape2)
 library(RColorBrewer)
+library(fst)
 
 # laod functions
 source("function.R")
@@ -13,8 +14,7 @@ source("function.R")
 library(data.table)
 setDTthreads(18)
 
-# load data
-library(fst)
+
 
 gene_symbol <- read.fst("data/gene_symbol.fst")
 gnomad_exome <- read.fst("data/gnomad_exome.fst")
