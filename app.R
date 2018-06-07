@@ -44,7 +44,7 @@ ui <- fluidPage(
          p(em('WEScover'), 'provides an interface to check for comprehensive coverage of clinically implicated genes across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the', a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 'using the GRCh38 reference genome. Data is reported for 28,161 exons of 2,692 samples across five populations at 10x, 20x, and 30x read depth.'),
          p('The main goal of this project is to provide a means of determining whether genes could comprehensively covered by WES, where there exists potential for false negatives due to incomplete breadth and depth of coverage, and provide information on gene panel testing to consider using in lieu of WES.'),
          p('The following plot shows the three levels of coverage for ', em('NOTCH1'), ' gene from gnomAD project data. We can see that, for some of the exons, the coverage is not optimal, indicating that potential false negative results can be obtained from those locations.'),
-         tags$img(scr="img/gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1"),
+         tags$img(src="img/gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1"),
          p('A secondary goal is to provide a statistic measure (one-way ANOVA test) to determine when the breadth of coverage in two or more continent-level populations is different from each other. An example of difference in breadth of coverage is seen for ', em('NOTCH1'), ' gene:'),
          tags$img(src="img/violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1"),
          p('Queries may be performed using phenotypes, targeted gene panel tests, or genes.')
@@ -120,6 +120,9 @@ ui <- fluidPage(
     ),
     tabPanel("Help",
       includeHTML("help.html")
+    ),
+    tabPanel("Data",
+      includeHTML("data.html")
     )
   )
 )
