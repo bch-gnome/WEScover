@@ -60,26 +60,26 @@ ui <- fluidPage(theme = shinytheme("flatly"),
       sidebarPanel(
               tags$h2("User input"),
               fluidRow(
-                column(9,
+                column(8,
                   selectizeInput("phen",
                     label="Phenotype",
                     choices = NULL,
                     multiple = TRUE)
                 ),
-                column(3,
+                column(4,
                   HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
                   tags$br(),
                   actionButton("fGPT", "Filter")#, icon = icon("filter", lib = "glyphicon"))
                 )
               ),
               fluidRow(
-                column(9,
+                column(8,
                   selectizeInput("gpt",
                     label="GPT name",
                     choices = NULL,
                     multiple = TRUE)
                 ),
-                column(3,
+                column(4,
                   HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
                   tags$br(),
                   actionButton("fGenes", "Filter")#, icon = icon("filter", lib = "glyphicon"))
