@@ -152,6 +152,8 @@ createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
                       "Raw P-Value","Adj. P-Value")
     rownames(xx) <- seq(nrow(xx))
     colnames(genes_by_ccds_id)
+    xx[,12] <- format.pval(xx[,12], digits = 3, eps = 0.001)
+    xx[,13] <- format.pval(xx[,13], digits = 3, eps = 0.001)
     xx
   } else {
     data.frame()
