@@ -60,33 +60,33 @@ ui <- fluidPage(theme = shinytheme("flatly"),
       sidebarPanel(
               tags$h2("User input"),
               fluidRow(
-                column(10,
+                column(9,
                   selectizeInput("phen",
                     label="Phenotype",
                     choices = NULL,
                     multiple = TRUE)
                 ),
-                column(2,
+                column(3,
                   HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
                   tags$br(),
-                  actionButton("fGPT", "", icon = icon("filter", lib = "glyphicon"))
+                  actionButton("fGPT", "Filter")#, icon = icon("filter", lib = "glyphicon"))
                 )
               ),
               fluidRow(
-                column(10,
+                column(9,
                   selectizeInput("gpt",
                     label="GPT name",
                     choices = NULL,
                     multiple = TRUE)
                 ),
-                column(2,
+                column(3,
                   HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
                   tags$br(),
-                  actionButton("fGenes", "", icon = icon("filter", lib = "glyphicon"))
+                  actionButton("fGenes", "Filter")#, icon = icon("filter", lib = "glyphicon"))
                 )
               ),
               fluidRow(
-                column(10, 
+                column(12, 
                   selectizeInput("gene_symbol", label = "Gene symbol",
                     choices = NULL,
                     multiple = TRUE,
@@ -103,7 +103,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 )
               ),
               fluidRow(
-                column(10, 
+                column(12, 
                  selectInput("depth_of_coverage",
                              label = "Depth of coverage",
                              choices = c("10x", "20x", "30x"),
@@ -112,9 +112,9 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 )
               ),
               fluidRow(
-                column(4, actionButton("clear", "Clear inputs", class = "btn-secondary")),
+                column(5, actionButton("clear", "Clear inputs", class = "btn-secondary")),
                 column(2),
-                column(4, actionButton("update", "Submit query", class = "btn-primary"))
+                column(5, actionButton("update", "Submit query", class = "btn-primary"))
               )
         ),
         mainPanel(
