@@ -50,7 +50,8 @@ ui <- fluidPage(theme = shinytheme("flatly"),
        wellPanel(
          h4("WEScover"),
          hr(),
-         p('WEScover provides an interface to check for consistent coverage across whole exome sequencing datasets. Breadth and depth of coverage data was collected from the 1000 Genomes Project (1KGP) using the hg38 reference genome')
+         p('WEScover provides an interface to check for consistent coverage across whole exome sequencing datasets. Breadth and depth of coverage data was collected from the 1000 Genomes Project (1KGP) using the hg38 reference genome'),
+         p('Queries can be performed using phenotypes, targeted gene panel tests, or genes. WEScover provides with global mean of breadth of coverage per CCDS obtained for the selected genes. A detailed panel provides, per CCDS, the mean of breath of coverage stratified per continental population, the distribution of breath of coverage per continental population in a violin plot, and the list of gene panel testing.')
        )
      )
     ),
