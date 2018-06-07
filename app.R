@@ -14,8 +14,6 @@ source("function.R")
 library(data.table)
 setDTthreads(18)
 
-
-
 gene_symbol <- read.fst("data/gene_symbol.fst")
 gnomad_exome <- read.fst("data/gnomad_exome.fst")
 row.names(gnomad_exome)<-gnomad_exome$V1
@@ -48,10 +46,18 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     tabPanel("Home",
      absolutePanel( width = "60%", left = "15%", right = "15%",
        wellPanel(
-         h4("WEScover"),
+         h1("WEScover"),
          hr(),
-         p('WEScover provides an interface to check for consistent coverage across whole exome sequencing datasets. Breadth and depth of coverage data was collected from the 1000 Genomes Project (1KGP) using the hg38 reference genome'),
-         p('Queries can be performed using phenotypes, targeted gene panel tests, or genes. WEScover provides with global mean of breadth of coverage per CCDS obtained for the selected genes. A detailed panel provides, per CCDS, the mean of breath of coverage stratified per continental population, the distribution of breath of coverage per continental population in a violin plot, and the list of gene panel testing.')
+         p(em('WEScover'), 
+           'provides an interface to check for comprehensive coverage of clinically implicated genes across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the', 
+           a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 
+           'using the GRCh38 reference genome. Data is reported for 28,161 exons of 2,692 samples across five populations at 10x, 20x, and 30x read depth. 
+            The goal of this project is to provide a means of determining whether genes
+           are comprehensively covered by WES, where there exists potential for false negatives due to incomplete breadth
+           and depth of coverage, and provide information on gene panel testing to consider using in lieu of WES.'),
+         p('Queries may be performed using phenotypes, targeted gene panel tests, or genes. WEScover provides global mean of breadth of coverage per entry in the', 
+           a('Consensus Coding Sequence', href = "https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi", target = "_blank"), 
+           '(CCDS) Project obtained for the exons of selected genes. A detailed panel provides, per CCDS entry, the mean of breath of coverage stratified per continental population, the distribution of breath of coverage per continental population in a violin plot, and the list of gene panel testing.')
        )
      )
     ),
