@@ -250,7 +250,7 @@ server <- function(input, output, session) {
     geneS <- unique(geneS)
     tbl <- createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     if(ncol(tbl) > 0) {
-      tbl <- tbl[ , c(1:5)]
+      tbl <- tbl[ , c(1:5, 11:13)]
       tbl$Action <- shinyInput(actionButton, nrow(tbl), 'button_', 
                                label = "Detail", 
                                onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )

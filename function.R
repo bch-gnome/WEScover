@@ -319,19 +319,19 @@ createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
   if (length(geneS) > 0) {
     if(depth == "10x") {
       colS <- c("gene_symbol", "ccds_id", "global_mean_10x", "global_min_10x", "global_max_10x", "AFR_mean_10x", "AMR_mean_10x", "EAS_mean_10x",
-                "EUR_mean_10x", "SAS_mean_10x", "F_statistic_10x","p_value_10x")
+                "EUR_mean_10x", "SAS_mean_10x", "F_statistic_10x","p_unadj_10x","p_adj_10x")
     } else if(depth == "20x") {
       colS <- c("gene_symbol", "ccds_id", "global_mean_20x", "global_min_20x", "global_max_20x","AFR_mean_20x", "AMR_mean_20x", "EAS_mean_20x",
-              "EUR_mean_20x", "SAS_mean_20x","F_statistic_20x","p_value_20x")
+              "EUR_mean_20x", "SAS_mean_20x","F_statistic_20x","p_unadj_20x","p_adj_20x")
     } else {
       colS <- c("gene_symbol", "ccds_id", "global_mean_30x","global_min_30x", "global_max_30x", "AFR_mean_30x", "AMR_mean_30x", "EAS_mean_30x",
-                "EUR_mean_30x", "SAS_mean_30x","F_statistic_30x","p_value_30x")
+                "EUR_mean_30x", "SAS_mean_30x","F_statistic_30x","p_unadj_30x","p_adj_30x")
     }
     xx <- genes_by_ccds_id[genes_by_ccds_id$gene_symbol %in% geneS, colS]
     xx <- xx[order(xx[, 3]), ]
     colnames(xx) <- c("Gene Symbol", "CCDS", "Global coverage (mean, %)", "Global coverage (min, %)", "Global coverage (max, %)", "AFR (%)", 
-                      "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)", "F-statistic",
-                      "-log10(p-value)")
+                      "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)", "ANOVA F-statistic",
+                      "p-value (unadjusted)","p-value (adjusted)")
     rownames(xx) <- seq(nrow(xx))
     colnames(genes_by_ccds_id)
     xx
