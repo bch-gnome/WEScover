@@ -118,8 +118,8 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 )
               ),
               fluidRow(
-                column(5, actionButton("clear", "Clear inputs", class = "btn-secondary")),
                 column(2),
+                column(5, actionButton("clear", "Clear inputs", class = "btn-secondary")),
                 column(5, actionButton("update", "Submit query", class = "btn-primary"))
               )
         ),
@@ -185,34 +185,45 @@ server <- function(input, output, session) {
   
   # observer to capture detail buttons in the main table
   observeEvent(input$detail_button, {
-    selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
-    #message(paste('click on detail ', selectedRow))
-    geneS <- as.character(main_table()[selectedRow, 1])
-    
-    myValue$summary_table <<- 
-      createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
-    myValue$GPT_table <<- 
-      createGPT(selectedRow, main_table(), gtrM)
-    myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
-    myValue$gene <<- geneS
-    myValue$ccds <<- main_table()[selectedRow, 2]
-    fileAD <- 
-      paste0("coverage_plots/", myValue$ccds, ".png")
-    if(file.exists(fileAD)) {
-      myValue$gnomAD_plot <<- list(
-        src = fileAD,
-        contentType = 'image/png',
-        width = "100%",
-        #height = 300,
-        alt = paste0("gnomAD coverage for ", myValue$ccds))
-    } else {
-      myValue$gnomAD_plot <<- list(
-        src = "coverage_plots/NO_CCDS_GAD.png",
-        contentType = 'image/png',
-        width = "100%",
-        #height = 300,
-        alt = paste0("No coverage from gnomAD for ", myValue$ccds))
-    }
+      selectedRow <- as.numeric(strsplit(input$detail_button, "_")[[1]][2])
+      geneS <- as.character(main_table()[selectedRow, 1])
+      ccds <-  as.character(main_table()[selectedRow, 2])
+      withProgress(message = paste0('Query for ', ccds, '/', geneS), value = 0.1, {
+      
+      incProgress(0.2, detail = "Obtaining continental population")
+      myValue$summary_table <<- 
+        createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
+      
+      incProgress(0.2, detail = "Obtaining gene panel tests")
+      myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
+      
+      incProgress(0.2, detail = "Creating violin plot")
+      myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
+      
+      incProgress(0.2, detail = "Saving details")
+      myValue$gene <<- geneS
+      myValue$ccds <<- ccds
+      incProgress(0.2, detail = "E")
+      fileAD <- paste0("coverage_plots/", myValue$ccds, ".png")
+      
+      if(file.exists(fileAD)) {
+        myValue$gnomAD_plot <<- list(
+          src = fileAD,
+          contentType = 'image/png',
+          width = "100%",
+          #height = 300,
+          alt = paste0("gnomAD coverage for ", myValue$ccds))
+      } else {
+        myValue$gnomAD_plot <<- list(
+          src = "coverage_plots/NO_CCDS_GAD.png",
+          contentType = 'image/png',
+          width = "100%",
+          #height = 300,
+          alt = paste0("No coverage from gnomAD for ", myValue$ccds))
+      }
+      
+      setProgress(1)
+    })
     showModal(modal_main())
     
   })
