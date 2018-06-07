@@ -1,45 +1,38 @@
 # load packages
 library(shiny)
-library(shinyjs)
+#library(shinyjs)
 library(shinythemes)
 library(DT)
-library(plotly)
+setDTthreads(18)
+#library(plotly)
 library(reshape2)
 library(RColorBrewer)
 library(fst)
+library(data.table)
 
 # laod functions
 source("function.R")
 
-library(data.table)
-setDTthreads(18)
-
+# load data
 gene_symbol <- read.fst("data/gene_symbol.fst")
 gnomad_exome <- read.fst("data/gnomad_exome.fst")
-row.names(gnomad_exome)<-gnomad_exome$V1
+row.names(gnomad_exome) <- gnomad_exome$V1
 summary <- read.fst("data/summary.fst")
 gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
 gpt <- read.fst("data/gpt.fst")
-# genes_by_ccds_id <- read.fst("data/genes_by_ccds_id.fst")
 tP <- read.fst("data/test_to_pheno.fst")
+ccds2ens <- readRDS("data/ccds_ens_map.rds")
 
-# tP2 <- tP[tP$phenotype_name == "Tuberous sclerosis 1",]
-# unique(gpt[gpt$GTR_accession %in% tP2$AccessionVersion,"gene_symbol"])
-
+# format data
 tP$AccessionVersion <- as.character(tP$AccessionVersion)
 tP$test_name <- as.character(tP$test_name)
 tP$phenotype_name <- as.character(tP$phenotype_name)
-# length(unique(as.character(tP$phenotype_name[tP$AccessionVersion %in% gpt$GTR_accession[ gpt$gene_symbol == "SIK1" ]])))
-## ccds id -> ensembl id (for coverage plot & link to gnomAD browser)
-ccds2ens<-readRDS("data/ccds_ens_map.rds")
-
 
 # Define UI ----
-ui <- fluidPage(theme = shinytheme("flatly"),
-  useShinyjs(),
-  #theme = shinytheme("cerulean"),
-  #titlePanel("WEScover"),
+ui <- fluidPage(
+  #useShinyjs(),
+  theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;}"),
   navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
@@ -48,16 +41,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
        wellPanel(
          h1("WEScover"),
          hr(),
-         p(em('WEScover'), 
-           'provides an interface to check for comprehensive coverage of clinically implicated genes across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the', 
-           a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 
-           'using the GRCh38 reference genome. Data is reported for 28,161 exons of 2,692 samples across five populations at 10x, 20x, and 30x read depth. 
-            The goal of this project is to provide a means of determining whether genes
-           are comprehensively covered by WES, where there exists potential for false negatives due to incomplete breadth
-           and depth of coverage, and provide information on gene panel testing to consider using in lieu of WES.'),
-         p('Queries may be performed using phenotypes, targeted gene panel tests, or genes. WEScover provides global mean of breadth of coverage per entry in the', 
-           a('Consensus Coding Sequence', href = "https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi", target = "_blank"), 
-           '(CCDS) Project obtained for the exons of selected genes. A detailed panel provides, per CCDS entry, the mean of breath of coverage stratified per continental population, the distribution of breath of coverage per continental population in a violin plot, and the list of gene panel testing.')
+         p(em('WEScover'), 'provides an interface to check for comprehensive coverage of clinically implicated genes across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the', a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 'using the GRCh38 reference genome. Data is reported for 28,161 exons of 2,692 samples across five populations at 10x, 20x, and 30x read depth.'),
+         p('The main goal of this project is to provide a means of determining whether genes are comprehensively covered by WES, where there exists potential for false negatives due to incomplete breadth and depth of coverage, and provide information on gene panel testing to consider using in lieu of WES.'),
+         tags$img(scr="img/gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1"),
+         p('A secondary goal is to provide a statistic measure (one-way ANOVA test) to determine when the depth of coverage in two or more continental populations is different. An example of different depth of coverage levels is seen for the gene NOTCH1:'),
+         tags$img(src="img/violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1"),
+         p('Queries may be performed using phenotypes, targeted gene panel tests, or genes.')
        )
      )
     ),
@@ -137,14 +126,10 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 
 # Define server logic ----
 server <- function(input, output, session) {
-  
-  # updateSelectizeInput(session, 'x', choices = letters, server = TRUE)
-  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), 
-                       server = TRUE)
-    updateSelectizeInput(session, 'gene_symbol', 
-                       choices = gene_symbol$gene_symbol,
-                       server = TRUE)
+  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
+  updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+  
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
     updateSelectizeInput(session, 'gene_symbol', 
@@ -190,20 +175,19 @@ server <- function(input, output, session) {
       ccds <-  as.character(main_table()[selectedRow, 2])
       withProgress(message = paste0('Query for ', ccds, '/', geneS), value = 0.1, {
       
-      incProgress(0.2, detail = "Obtaining continental population")
+      incProgress(0.2, detail = "(Obtaining continental population)")
       myValue$summary_table <<- 
         createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
       
-      incProgress(0.2, detail = "Obtaining gene panel tests")
+      incProgress(0.2, detail = "(Obtaining gene panel tests)")
       myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
       
-      incProgress(0.2, detail = "Creating violin plot")
+      incProgress(0.2, detail = "(Creating violin plot)")
       myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
       
-      incProgress(0.2, detail = "Saving details")
+      incProgress(0.2, detail = "(Saving details)")
       myValue$gene <<- geneS
       myValue$ccds <<- ccds
-      incProgress(0.2, detail = "E")
       fileAD <- paste0("coverage_plots/", myValue$ccds, ".png")
       
       if(file.exists(fileAD)) {
@@ -211,14 +195,14 @@ server <- function(input, output, session) {
           src = fileAD,
           contentType = 'image/png',
           width = "100%",
-          #height = 300,
+          height = 300,
           alt = paste0("gnomAD coverage for ", myValue$ccds))
       } else {
         myValue$gnomAD_plot <<- list(
           src = "coverage_plots/NO_CCDS_GAD.png",
           contentType = 'image/png',
           width = "100%",
-          #height = 300,
+          height = 300,
           alt = paste0("No coverage from gnomAD for ", myValue$ccds))
       }
       
@@ -240,9 +224,6 @@ server <- function(input, output, session) {
       geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneG)
     } else if(length(input$phen) != 0) {
-
-      message("OK")
-      #input <- list(pehn = "Tuberous sclerosis 1")
       geneP <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
       message(length(geneP))
       geneS <- c(geneS, geneP)
@@ -267,7 +248,7 @@ server <- function(input, output, session) {
                                onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
     }
     tbl
-    })
+  })
   
   # display reactive main table
   output$tableMain <- renderDataTable( {
@@ -292,10 +273,6 @@ server <- function(input, output, session) {
                    column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
                    column(8, tags$a(imageOutput("gnomAD_plot"),href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank"))
                  )),
-#        tabPanel("Violin per population",
-#                 plotOutput("violin_population")),
-#        tabPanel("gnomAD coverage",
-#                 imageOutput("gnomAD_plot")),
         tabPanel("Gene panels",
                  dataTableOutput('GPT_table'))
       ),
@@ -361,7 +338,7 @@ server <- function(input, output, session) {
     dta$Population <- as.character(dta$Population)
     dta$variable <- as.character(dta$variable)
     dta$value <- as.numeric(dta$value)
-    dta$GeneSymbol <- myValue$gene
+    dta$GeneSymbol <- gene#myValue$gene
     
     gAD <- gnomad_exome[selCCDS, idx]
     p1 <- ggplot(dta, aes(x=Population, y=value, color=Population)) + 
@@ -372,8 +349,6 @@ server <- function(input, output, session) {
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
     message("[PLOT] ", ccds2ens[ selCCDS, 2])
-
-    #ggplotly(p1)
     p1
   }
 }

@@ -149,7 +149,7 @@ createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
     xx <- xx[order(xx[, 3]), ]
     colnames(xx) <- c("Gene Symbol", "CCDS", "Global coverage (mean, %)", "Global coverage (min, %)", "Global coverage (max, %)", "AFR (%)", 
                       "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)", "ANOVA F-statistic",
-                      "p-value (unadjusted)","p-value (adjusted)")
+                      "Raw P-Value","Adj. P-Value")
     rownames(xx) <- seq(nrow(xx))
     colnames(genes_by_ccds_id)
     xx
