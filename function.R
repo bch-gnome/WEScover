@@ -333,6 +333,7 @@ createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
                       "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)", "F-statistic",
                       "-log10(p-value)")
     rownames(xx) <- seq(nrow(xx))
+    colnames(genes_by_ccds_id)
     xx
   } else {
     data.frame()
