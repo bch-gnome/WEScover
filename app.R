@@ -37,7 +37,7 @@ ui <- fluidPage(
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;}"),
   navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Home",
-     absolutePanel( width = "60%", left = "15%", right = "15%",
+     absolutePanel( width = "70%", left = "15%", right = "15%",
        wellPanel(
          h1("WEScover"),
          hr(),
