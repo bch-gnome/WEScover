@@ -3,13 +3,13 @@ library(shiny)
 #library(shinyjs)
 library(shinythemes)
 library(DT)
-setDTthreads(18)
+library(ggplot2)
 #library(plotly)
 library(reshape2)
 library(RColorBrewer)
 library(fst)
 library(data.table)
-
+setDTthreads(18)
 # laod functions
 source("function.R")
 
@@ -20,14 +20,15 @@ row.names(gnomad_exome) <- gnomad_exome$V1
 summary <- read.fst("data/summary.fst")
 gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
-gpt <- read.fst("data/gpt.fst")
-tP <- read.fst("data/test_to_pheno.fst")
+# gpt <- read.fst("data/gpt.fst")
+# tP <- read.fst("data/test_to_pheno.fst")
+gpt_tP_tG <- read.fst("data/gpt_tP_tG.fst")
 ccds2ens <- readRDS("data/ccds_ens_map.rds")
 
 # format data
-tP$AccessionVersion <- as.character(tP$AccessionVersion)
-tP$test_name <- as.character(tP$test_name)
-tP$phenotype_name <- as.character(tP$phenotype_name)
+gpt_tP_tG$GTR_accession <- as.character(gpt_tP_tG$GTR_accession)
+gpt_tP_tG$test_name <- as.character(gpt_tP_tG$test_name)
+gpt_tP_tG$phenotype_name <- as.character(gpt_tP_tG$phenotype_name)
 
 # Define UI ----
 ui <- fluidPage(
@@ -127,31 +128,31 @@ ui <- fluidPage(
 
 # Define server logic ----
 server <- function(input, output, session) {
-  updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
+  updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
   updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
-  updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE)
+  updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
   observeEvent (input$clear,{
-    updateSelectizeInput(session, 'phen', choices = sort(unique(tP$phenotype_name)), server = TRUE)
+    updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
     updateSelectizeInput(session, 'gene_symbol', 
                          choices = gene_symbol$gene_symbol, server = TRUE,
                          label = "Gene symbol")
-    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt$test_name)), server = TRUE,
+    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
   
   observeEvent (input$fGPT,{
-    listPhe <- unique(gpt$test_name[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ] ])
+    listPhe <- unique(gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
     updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE,
                          label = "GPT name (filtered)")
-    listGenes <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
+    listGenes <- unique(gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
     updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
                          label = "Gene symbol (filtered)")
   })
   
   observeEvent (input$fGenes,{
-    listGenes <- gpt$gene_symbol[ gpt$test_name %in% as.character(input$gpt) ]
+    listGenes <- gpt_tP_tG$gene_symbol[ gpt_tP_tG$test_name %in% as.character(input$gpt) ]
     updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
                          label = "Gene symbol (filtered)")
   })
@@ -222,17 +223,17 @@ server <- function(input, output, session) {
     if (length(input$gene_symbol) != 0) {
       geneS <- c(geneS, input$gene_symbol)
     } else if (length(input$gpt) != 0) {
-      geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
+      geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneG)
     } else if(length(input$phen) != 0) {
-      geneP <- unique(gpt$gene_symbol[ gpt$GTR_accession %in% tP$AccessionVersion[ tP$phenotype_name %in% as.character(input$phen) ]])
+      geneP <- unique(gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
       message(length(geneP))
       geneS <- c(geneS, geneP)
     }
     }
 
     if (length(input$gpt) != 0) {
-      geneG <- as.character(unique(gpt[gpt$test_name %in% input$gpt, "gene_symbol"]))
+      geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
       geneS <- c(geneS, geneG)
     }
     
