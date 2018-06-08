@@ -187,11 +187,14 @@ server <- function(input, output, session) {
       withProgress(message = paste0('Query for ', ccds, '/', geneS), value = 0.1, {
       
       incProgress(0.2, detail = "(Obtaining continental population)")
-      myValue$summary_table <<- 
-        createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
+        myValue$summary_table <<-
+          createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)[,c(1,2,6:10)]
+      # myValue$summary_table <<-
+      #   createMainTable2(geneS, input$depth_of_coverage, gpt_tP_tG)[,c(1,2,6:10)]
       
       incProgress(0.2, detail = "(Obtaining gene panel tests)")
       myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
+      # myValue$GPT_table <<- createGPT(selectedRow, main_table(), gpt_tP_tG)
       
       incProgress(0.2, detail = "(Creating violin plot)")
       myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
@@ -251,7 +254,8 @@ server <- function(input, output, session) {
     }
     
     geneS <- unique(geneS)
-    tbl <- createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
+    # tbl <- createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
+    tbl <- createMainTable2(geneS, input$depth_of_coverage, gpt_tP_tG)
     if(ncol(tbl) > 0) {
       tbl <- tbl[ , c(1:5, 11:13)]
       tbl$Action <- shinyInput(actionButton, nrow(tbl), 'button_', 
