@@ -1,10 +1,12 @@
 # load packages
 library(shiny)
-#library(shinyjs)
 library(shinythemes)
 library(DT)
 library(ggplot2)
+<<<<<<< HEAD
 #library(plotly)
+=======
+>>>>>>> c0af4d78344c28f0e1a3fb4fe2e126acb7054267
 library(reshape2)
 library(RColorBrewer)
 library(fst)
@@ -30,25 +32,29 @@ gpt_tP_tG$GTR_accession <- as.character(gpt_tP_tG$GTR_accession)
 gpt_tP_tG$test_name <- as.character(gpt_tP_tG$test_name)
 gpt_tP_tG$phenotype_name <- as.character(gpt_tP_tG$phenotype_name)
 
+setDTthreads(18)
+
 # Define UI ----
 ui <- fluidPage(
   #useShinyjs(),
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
-  tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;}"),
+  tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto}"),
   navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Home",
      absolutePanel( width = "70%", left = "15%", right = "15%",
        wellPanel(
          em(h1("WEScover")),
          hr(),
-         p(em('WEScover'), 'provides an interface to check for comprehensive coverage of clinically implicated genes across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the', a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 'using the GRCh38 reference genome. Data is reported for 28,161 exons of 2,692 samples across five populations at 10x, 20x, and 30x read depth.'),
-         p('The main goal of this project is to provide a means of determining whether genes could comprehensively covered by WES, where there exists potential for false negatives due to incomplete breadth and depth of coverage, and provide information on gene panel testing to consider using in lieu of WES.'),
-         p('The following plot shows the three levels of coverage for ', em('NOTCH1'), ' gene from gnomAD project data. We can see that, for some of the exons, the coverage is not optimal, indicating that potential false negative results can be obtained from those locations.'),
-         tags$img(scr="img/gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1"),
-         p('A secondary goal is to provide a statistic measure (one-way ANOVA test) to determine when the breadth of coverage in two or more continent-level populations is different from each other. An example of difference in breadth of coverage is seen for ', em('NOTCH1'), ' gene:'),
-         tags$img(src="img/violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1"),
-         p('Queries may be performed using phenotypes, targeted gene panel tests, or genes.')
+         p(em('WEScover'), 'helps users to check whether genes of interest could be sufficiently covered in terms of breadth and depth by whole exome sequencing (WES). For each transcript, breadth of coverage data was calculated at 10x, 20x, and 30x read depth from the ', 
+           a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 
+           '(N=2,692). A user will be able to minimize the chance of false negatives by selecting a targeted gene panel test for the genes that WES cannot cover well.'),
+         p('Breadth and depth of coverage for ', a(em('NOTCH1'), href = "http://gnomad.broadinstitute.org/gene/ENSG00000148400", target="_blank"),
+           ' are illustrated below. For some of the exons, breadth of coverage seems to be sub-optimal that could result in false negative results with WES.'),
+         tags$img(src="gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1", style="width:650px;height:300px", class="center"),
+         p(em('WEScover'), ' provides detailed coverage information including difference in breadth of coverage between continent-level populatios.'),
+         tags$img(src="violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1", style="width:650px;height:300px", class="center"),
+         p('Phenotype, genetic test names, or gene symbols can be used to retrieve coverage information in the query window. The output summary helps users to choose WES vs. targeted gene panel testing.')
        )
      )
     ),
@@ -121,6 +127,9 @@ ui <- fluidPage(
     ),
     tabPanel("Help",
       includeHTML("help.html")
+    ),
+    tabPanel("Data",
+      includeHTML("data.html")
     )
   )
 )
@@ -190,7 +199,7 @@ server <- function(input, output, session) {
       incProgress(0.2, detail = "(Saving details)")
       myValue$gene <<- geneS
       myValue$ccds <<- ccds
-      fileAD <- paste0("coverage_plots/", myValue$ccds, ".png")
+      fileAD <- paste0("coverage_plots/", ccds2ens[as.character(myValue$ccds), 2], ".png")
       
       if(file.exists(fileAD)) {
         myValue$gnomAD_plot <<- list(
@@ -198,14 +207,14 @@ server <- function(input, output, session) {
           contentType = 'image/png',
           width = "100%",
           height = 300,
-          alt = paste0("gnomAD coverage for ", myValue$ccds))
+          alt = paste0("gnomAD coverage for ", ccds2ens[as.character(myValue$ccds), 2]))
       } else {
         myValue$gnomAD_plot <<- list(
-          src = "coverage_plots/NO_CCDS_GAD.png",
+          src = "coverage_plots/Dummy_coverage_plot.png",
           contentType = 'image/png',
           width = "100%",
           height = 300,
-          alt = paste0("No coverage from gnomAD for ", myValue$ccds))
+          alt = paste0("No coverage from gnomAD for ", ccds2ens[as.character(myValue$ccds), 2]))
       }
       
       setProgress(1)
@@ -271,10 +280,16 @@ server <- function(input, output, session) {
         tabPanel("Population summary",
           dataTableOutput('summary_table')),
         tabPanel("Coverage plots",
-                 fluidRow(align="center",
-                   column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
-                   column(8, tags$a(imageOutput("gnomAD_plot"),href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank"))
-                 )),
+                 fluidRow(
+                   column(4, align="center", plotOutput("violin_population")),
+                   column(8, align="center",
+                          tags$label("Click the plot to go to the gnomAD server."),
+                      tags$a(imageOutput("gnomAD_plot"),
+                             href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")#,
+                      #,
+                      #HTML("<label>&nbsp;</label>")
+                 ))
+        ),
         tabPanel("Gene panels",
                  dataTableOutput('GPT_table'))
       ),
@@ -350,7 +365,7 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
-    message("[PLOT] ", ccds2ens[ selCCDS, 2])
+#    message("[PLOT] ", ccds2ens[ selCCDS, 2])
     p1
   }
 }
