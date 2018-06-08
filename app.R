@@ -275,10 +275,16 @@ server <- function(input, output, session) {
         tabPanel("Population summary",
           dataTableOutput('summary_table')),
         tabPanel("Coverage plots",
-                 fluidRow(align="center",
-                   column(4, plotOutput("violin_population"), div(style="max-height:100px;")),
-                   column(8, tags$a(imageOutput("gnomAD_plot"),href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank"))
-                 )),
+                 fluidRow(
+                   column(4, align="center", plotOutput("violin_population")),
+                   column(8, align="center",
+                          tags$label("Click the plot to go to the gnomAD server."),
+                      tags$a(imageOutput("gnomAD_plot"),
+                             href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")#,
+                      #,
+                      #HTML("<label>&nbsp;</label>")
+                 ))
+        ),
         tabPanel("Gene panels",
                  dataTableOutput('GPT_table'))
       ),
