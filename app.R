@@ -3,10 +3,10 @@ library(shiny)
 library(shinythemes)
 library(DT)
 library(ggplot2)
-<<<<<<< HEAD
+
 #library(plotly)
-=======
->>>>>>> c0af4d78344c28f0e1a3fb4fe2e126acb7054267
+
+
 library(reshape2)
 library(RColorBrewer)
 library(fst)
