@@ -139,7 +139,8 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output, session) {
   updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
-  updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
+  updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE)
+  # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
   # if a gene symbil is provided by url
@@ -147,7 +148,8 @@ server <- function(input, output, session) {
     query <- parseQueryString(session$clientData$url_search)
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       updateNavbarPage(session, "mainNav", "Query")
-      updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
+      # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
@@ -156,8 +158,11 @@ server <- function(input, output, session) {
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
     updateSelectizeInput(session, 'gene_symbol', 
-                         choices = gene_symbol$gene_symbol, server = TRUE,
+                         choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
                          label = "Gene symbol")
+    # updateSelectizeInput(session, 'gene_symbol', 
+    #                      choices = gene_symbol$gene_symbol, server = TRUE,
+    #                      label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
@@ -207,8 +212,8 @@ server <- function(input, output, session) {
       #   createMainTable2(geneS, input$depth_of_coverage, gpt_tP_tG)[,c(1,2,6:10)]
       
       incProgress(0.2, detail = "(Obtaining gene panel tests)")
-      myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
-      # myValue$GPT_table <<- createGPT(selectedRow, main_table(), gpt_tP_tG)
+      # myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
+      myValue$GPT_table <<- createGPT(selectedRow, main_table(), gpt_tP_tG)
       
       incProgress(0.2, detail = "(Creating violin plot)")
       myValue$violon_population <<- createPlot(geneS, main_table()[selectedRow, 2])
