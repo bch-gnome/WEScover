@@ -20,8 +20,6 @@ row.names(gnomad_exome) <- gnomad_exome$V1
 summary <- read.fst("data/summary.fst")
 gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
-# gpt <- read.fst("data/gpt.fst")
-# tP <- read.fst("data/test_to_pheno.fst")
 gpt_tP_tG <- read.fst("data/gpt_tP_tG.fst")
 ccds2ens <- readRDS("data/ccds_ens_map.rds")
 
@@ -37,6 +35,12 @@ ui <- fluidPage(
   useShinyjs(),
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
+  ## javascript required to clean the 'check' of detail buttons in main table
+  tags$script("
+      Shiny.addCustomMessageHandler('resetInputValue', function(variableName){
+        Shiny.onInputChange(variableName, null);
+      });
+    "),
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto}"),
   #js function to reset a button, variableName is the button name whose value we want to reset
   tags$script("Shiny.addCustomMessageHandler('reset_detail_button', function(detail_button){
@@ -146,14 +150,16 @@ ui <- fluidPage(
 
 # Define server logic ----
 server <- function(input, output, session) {
+  # fill with default values
   updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
   updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE)
   # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
-  # if a gene symbil is provided by url
+  # if a gene symbol is provided by url
   observe({
     query <- parseQueryString(session$clientData$url_search)
+    message("query")
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
@@ -162,9 +168,15 @@ server <- function(input, output, session) {
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
 
       updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
+<<<<<<< HEAD
     }
     if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
 
+=======
+    #}
+    #if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
+      message("update! ", input$refresh_helper, " ", myValue$inc)
+>>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
@@ -172,6 +184,7 @@ server <- function(input, output, session) {
   # if clear button is pushed
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
+<<<<<<< HEAD
     updateSelectizeInput(session, 'gene_symbol', 
                          choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
                          label = "Gene symbol")
@@ -180,24 +193,27 @@ server <- function(input, output, session) {
     #                      label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
+=======
+    updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
+    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
+>>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
   
   # if filter GPT button is pushed
   observeEvent (input$fGPT,{
-    listPhe <- unique(gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
-    updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE,
-                         label = "GPT name (filtered)")
-    listGenes <- unique(gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
-    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
-                         label = "Gene symbol (filtered)")
+    listPhe <- unique(
+      gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
+    updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE, label = "GPT name (filtered)")
+    listGenes <- unique(
+      gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
+    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
   })
   
   # if filter gene symbol butto is pushed
   observeEvent (input$fGenes,{
     listGenes <- gpt_tP_tG$gene_symbol[ gpt_tP_tG$test_name %in% as.character(input$gpt) ]
-    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
-                         label = "Gene symbol (filtered)")
+    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
   })
   
   # generator of buttons for the main table
@@ -210,7 +226,7 @@ server <- function(input, output, session) {
   }
   
   # list of global values
-  myValue <- reactiveValues(summary_table = NA, GPT_table = NA, 
+  myValue <- reactiveValues(summary_table = NA, GPT_table = NA,
     violon_population = NA, gene = "", ccds="", gnomAD_plot="")
   
   # observer to capture detail buttons in the main table
@@ -257,26 +273,30 @@ server <- function(input, output, session) {
       setProgress(1)
     })
     showModal(modal_main())
+<<<<<<< HEAD
     ##Reset the select_button
     session$sendCustomMessage(type = 'reset_detail_button', message =  "detail_button")
+=======
+    # reset the "check" on the button in the main table
+    session$sendCustomMessage(type = 'resetInputValue', message =  "detail_button")
+>>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
   })
   
   # create reactive main table
   main_table <- reactive ({
     geneS <- c()
-    
     if(length(input$phen) != 0) {
-
-    if (length(input$gene_symbol) != 0) {
-      geneS <- c(geneS, input$gene_symbol)
-    } else if (length(input$gpt) != 0) {
-      geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
-      geneS <- c(geneS, geneG)
-    } else if(length(input$phen) != 0) {
-      geneP <- unique(gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
-      message(length(geneP))
-      geneS <- c(geneS, geneP)
-    }
+      if (length(input$gene_symbol) != 0) {
+        geneS <- c(geneS, input$gene_symbol)
+      } else if (length(input$gpt) != 0) {
+        geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
+        geneS <- c(geneS, geneG)
+      } else if(length(input$phen) != 0) {
+        geneP <- unique(gpt_tP_tG$gene_symbol[ 
+          gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
+        message(length(geneP))
+        geneS <- c(geneS, geneP)
+      }
     }
 
     if (length(input$gpt) != 0) {
@@ -295,7 +315,7 @@ server <- function(input, output, session) {
       tbl <- tbl[ , c(1:5, 11:13)]
       tbl$Action <- shinyInput(actionButton, nrow(tbl), 'button_', 
                                label = "Detail", 
-                               onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)' )
+                               onclick = 'Shiny.onInputChange(\"detail_button\",  this.id)')
     }
     tbl
   })
@@ -309,15 +329,19 @@ server <- function(input, output, session) {
   # display reactive main table
   output$tableMain <- renderDataTable( {
     #input$update
+    message(input$refresh_helper)
     t = input$refresh_helper
-    
-    isolate({
-      if(ncol(main_table()) > 0) {
-        formatStyle(datatable(main_table(), escape = FALSE, selection = 'none'), 
-                  columns = "Global coverage (mean, %)", target = 'row', backgroundColor = 
-                    styleInterval(cuts = c(95, 98), values=c("#FFE4E1", "#FFFFE0", "#F0FFF0")))
-      }
-    })
+    if(t > 0 ) {
+      isolate({
+        if(ncol(main_table()) > 0) {
+          formatStyle(datatable(main_table(), escape = FALSE, selection = 'none'), 
+                    columns = "Global coverage (mean, %)", target = 'row', backgroundColor = 
+                      styleInterval(cuts = c(95, 98), values=c("#FFE4E1", "#FFFFE0", "#F0FFF0")))
+        }
+      })
+    } else {
+      data.frame()
+    }
   })
   
   # modal window to show tables and plots
