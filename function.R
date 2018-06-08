@@ -116,11 +116,14 @@ load30x <- function(summary) {
   }
 }
 
-createGPT <- function(row, main_table, gtrM) {
+createGPT <- function(row, main_table, gpt_tP_tG) {
+# createGPT <- function(row, main_table, gtrM) {
   tbl <- data.frame(
     A = as.character(main_table[row, 1]),
-    B = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "AccessionVersion"]),
-    C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
+    B = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "GTR_accession"],
+    C = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "test_name"],
+    # B = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "AccessionVersion"]),
+    # C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
     stringsAsFactors = FALSE
   )
   createLink <- function(val) {
@@ -128,11 +131,13 @@ createGPT <- function(row, main_table, gtrM) {
   }
   tbl$B <- sapply(tbl$B, createLink)
   
-  colnames(tbl) <- c("Gene Symbol", "Version", "Gene Panel Testing")
+  colnames(tbl) <- c("Gene Symbol", "GTR Test ID", "Test Name")
   rownames(tbl) <- seq(nrow(tbl))
+  tbl <- tbl[!duplicated(tbl), ]
   tbl
 }
 
+# createMainTable2 <- function(geneS, depth, gpt_tP_tG) {
 createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
   if (length(geneS) > 0) {
     if(depth == "10x") {

@@ -147,9 +147,16 @@ server <- function(input, output, session) {
   observe({
     query <- parseQueryString(session$clientData$url_search)
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
+      geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
+<<<<<<< HEAD
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
+=======
+      updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
+    }
+    if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
+>>>>>>> 8b314d5e275b4f7d7dcf7cae8fa9c44a965dd431
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
