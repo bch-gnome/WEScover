@@ -1,10 +1,8 @@
 # load packages
 library(shiny)
-#library(shinyjs)
 library(shinythemes)
 library(DT)
-
-#library(plotly)
+library(ggplot2)
 library(reshape2)
 library(RColorBrewer)
 library(fst)
