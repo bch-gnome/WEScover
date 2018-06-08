@@ -189,7 +189,7 @@ server <- function(input, output, session) {
       incProgress(0.2, detail = "(Saving details)")
       myValue$gene <<- geneS
       myValue$ccds <<- ccds
-      fileAD <- paste0("coverage_plots/", myValue$ccds, ".png")
+      fileAD <- paste0("coverage_plots/", ccds2ens[as.character(myValue$ccds), 2], ".png")
       
       if(file.exists(fileAD)) {
         myValue$gnomAD_plot <<- list(
@@ -197,14 +197,14 @@ server <- function(input, output, session) {
           contentType = 'image/png',
           width = "100%",
           height = 300,
-          alt = paste0("gnomAD coverage for ", myValue$ccds))
+          alt = paste0("gnomAD coverage for ", ccds2ens[as.character(myValue$ccds), 2]))
       } else {
         myValue$gnomAD_plot <<- list(
-          src = "coverage_plots/NO_CCDS_GAD.png",
+          src = "coverage_plots/Dummy_coverage_plot.png",
           contentType = 'image/png',
           width = "100%",
           height = 300,
-          alt = paste0("No coverage from gnomAD for ", myValue$ccds))
+          alt = paste0("No coverage from gnomAD for ", ccds2ens[as.character(myValue$ccds), 2]))
       }
       
       setProgress(1)
@@ -349,7 +349,7 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
-    message("[PLOT] ", ccds2ens[ selCCDS, 2])
+#    message("[PLOT] ", ccds2ens[ selCCDS, 2])
     p1
   }
 }
