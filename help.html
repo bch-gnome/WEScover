@@ -4,32 +4,32 @@
 
 <p>WEScover provides an interface where users can search genes of interest according to  phenotypes, targeted gene panel tests, or gene symbols to check for breadth of  coverage across whole exome sequencing (WES) datasets. Breadth and depth of coverage data were collected from the 1000 Genomes Project (1KGP) using the GRCh38 reference human genome. Breadth of coverage refers to the proportion of gene that is covered at a per-site read depth (e.g., x10, x20 or x30), the average number of times a given region has been sequenced by independent reads, on a population scale. Users may check for genes related to phenotype of interest and determine whether they could be comprehensively covered by WES instead of targeted gene panel testing. Conversely, if candidate genes have a mean breadth of coverage lower than 95% in two population scale WES datasets then targeted gene panel testing should be considered to minimize potential false negatives. This user guide provides an overview of WEScover.</p>
 <br>
-<img src="img/help_1.png">
+<img src="help_1.png">
 <h3>2. Using the <a href="https://www.ncbi.nlm.nih.gov" target="_blank">Genetic Testing Registry</a> to identify targeted gene panel tests and candidate genes.</h3>
 
 <p>As as example, we illustrate how the Genetic Testing Registry (GTR) can be used to identify list of genetic tests for for nonalcoholic fatty liver disease (NAFLD).  First, the user must go to the GTR website and query for conditions and/or phenotypes of interest, in this case NAFLD as shown in the figure below.</p>
 <br>
-<img src="img/help_2.png">
+<img src="help_2.png">
 <p>This search will bring the user to its phenotype entry in GTR. The panels that may be used for this phenotype may be found by clicking the first link in the “Available tests” section. A table with a list of test names will be returned, and clicking on the <i>Genes and analytes</i> option will show genes included in these gene panel test (GPT).</p>
 <br>
-<img src="img/help_3.png">
+<img src="help_3.png">
 <p>PNPLA3 is the gene associated with NAFLD and five GTR registered genetic testings. Before deciding whether to recommend WES or genetic testing panels, users may check breadth of coverage of PNPLA3 and decide whether it is comprehensively covered by WES.</p>
 <br>
-<img src="img/help_4.png"><h3>3. Using WEScover</h3>
+<img src="help_4.png"><h3>3. Using WEScover</h3>
 <br>
 <h4>3.1.User input</h4>
 
 <p>The <i>User input</i> panel, shown in the figure below, is set up such that queries to <i>WEScover</i> may be done by phenotype, gene panel tests (GPT), or gene symbol. All fields contain an autocomplete setting that will help the users navigate quickly and easily find their search terms of interest. Phenotypes, disease conditions that users may want to test for, may be typed into the <b>Phenotypes</b> field. Pressing the filter button next to <b>Phenotypes</b> will filter the database for all gene panels that test for the given phenotype, which may be seen by clicking <b>GPT name</b>. There is also a filter button next to this field which will return all genes that that are targeted by the queried tests when <b>Gene symbol</b> is clicked. <b>Depth of coverage</b> may be fixed at 10x, 20x, or 30x, where the default is set at 20x.</p>
 
 <br>
-<img src="img/help_5.png">
+<img src="help_5.png">
 <p>Following the example described previously, users may type "Fatty liver disease, nonalcoholic 1", as written in GTR, under <b>Phenotype</b> then click the Filter button to return all genes associated with this phenotype. When <b>Gene symbol</b> is clicked, only <i>PNPLA3</i> will be listed. After all inputs are set, the Submit query button may be clicked.
 
 <h4>3.2. Table</h4>
 
 <p>Breadth of coverage is reported for the exons of queried genes by their Consensus Coding Sequence identifier (CCDS ID). Clicking “Submit query” generates a table shown below with the following columns:</p>
 <br>
-<img src="img/help_6.png">
+<img src="help_6.png">
 <ul>
 <li>Gene symbol: Official symbol for the gene by <a href = "https://www.genenames.org/" target="_blank">HUGO Gene Nomenclature Committee (HGNC)</a>.</li>
 <li><b>CCDS ID</b> is the unique accession identifier in the CCDS Project for the exon of the gene.</li>
@@ -44,14 +44,14 @@
 
 <p><b>Population summary</b> reports the mean breadth of coverage for each CCDS ID by super population. This information may be used to highlight differences in coverage between different populations. For example, exons that are comprehensively covered by WES in Europeans may have a lower mean breadth of coverage in another ancestry, suggesting the use of gene panels instead.</p>
 <br>
-<img src="img/help_7.png">
+<img src="help_7.png">
 
 <p><b>Coverage plots</b> shows two plots: the breadth of coverage distribution and coverage metric across genomic loci for the gene. On the left, a violin plot shows the breadth of coverage distribution by super populations. The black horizontal line in the plot marks the mean breadth of coverage from exomes in the Genome Aggregation Database (gnomAD) as a global estimate from large-scale data (over 123,000 exomes in the latest release 2.0.2).</p>
 
 <p>The second plot shows coverage metric (from exomes in gnomAD browser) over genomic positions in the selected gene for the hg19 reference genome. The plot consists of three parts: the coverage metric (top), exons and transcripts in the gene (middle), and position of the gene in the chromosome (bottom). The coverage metric is defined as the proportion of exomes in the gnomAD (y-axis) which achieved the target depth of coverage (10x, 20x, or 30x) at the given locus (x-axis). The coverage metrics at different target depths are represented by different colors: 10x as light blue, 20x as medium blue, and 30x as dark blue.</p>
 
 <br>
-<img src="img/help_8.png">
+<img src="help_8.png">
 <p>If the given position in the gene is well-covered in most of gnomAD exomes, the position will have high metric values (and in dark colors, too, if the position is also well-covered at higher target depths). For the <i>PLPNA3</i> gene, most coding exons (except for the leftmost one) are well-covered at all depths. On the other hand, if a given region have high values only in light colors (e.g., 90% exomes attained 10x coverage, but only 10% succeed at 30x), or if the region have low metric values over any target depths (e.g., only 5% of exomes had covered the region at any level), it indicates that the region is not well covered among exomes in gnomAD. In the previous figure, the leftmost exon in <i>PLPNA3</i> gene is less-covered compared to other exons. Clicking on the image will open an entry for the corresponding gene in the gnomAD browser, which provides more detailed information. The gene models and genomic positions follows the coverage metric plot, as a guide to match genomic positions to the gene.  Due to differences in reference genomes used in the data (breadth of coverage values from 1KGP are based on the latest human reference genome (hg38), while coverage metric from gnomAD is based on the previous version (hg19)), some genes may not have a corresponding plot for coverage metric.</p>
 
 <p><b>Gene panels</b> provides a list of all panels registered in GTR that target this CCDS by gene symbol. Each panel is listed by its unique accession version and provides a hyperlink to its entry in GTR when clicked. Given all genes reported by WEScover to be poorly covered by WES, users may browse these panels and read their entries in GTR to learn how to gain access to these tests.</p>
