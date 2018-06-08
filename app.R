@@ -36,7 +36,7 @@ ui <- fluidPage(
   #useShinyjs(),
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
-  tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto; width: 50%; }"),
+  tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto}"),
   navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Home",
      absolutePanel( width = "70%", left = "15%", right = "15%",
