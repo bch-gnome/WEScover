@@ -3,15 +3,13 @@ library(shiny)
 library(shinythemes)
 library(DT)
 library(ggplot2)
-
-#library(plotly)
-
-
+library(shinyjs)
 library(reshape2)
 library(RColorBrewer)
 library(fst)
 library(data.table)
 setDTthreads(18)
+
 # laod functions
 source("function.R")
 
@@ -36,11 +34,11 @@ setDTthreads(18)
 
 # Define UI ----
 ui <- fluidPage(
-  #useShinyjs(),
+  useShinyjs(),
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto}"),
-  navbarPage("WEScover", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
+  navbarPage("WEScover", id="mainNav", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Home",
      absolutePanel( width = "70%", left = "15%", right = "15%",
        wellPanel(
@@ -129,7 +127,10 @@ ui <- fluidPage(
       includeHTML("help.html")
     ),
     tabPanel("Data",
-      includeHTML("data.html")
+      includeHTML("data.html"),
+      hidden( 
+        numericInput( inputId = 'refresh_helper', label = 'refresh_helper', value = 0 ) 
+      )
     )
   )
 )
@@ -141,6 +142,17 @@ server <- function(input, output, session) {
   updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
+  # if a gene symbil is provided by url
+  observe({
+    query <- parseQueryString(session$clientData$url_search)
+    if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
+      updateNavbarPage(session, "mainNav", "Query")
+      updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
+      updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
+    }
+  })
+  
+  # if clear button is pushed
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
     updateSelectizeInput(session, 'gene_symbol', 
@@ -151,6 +163,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
   
+  # if filter GPT button is pushed
   observeEvent (input$fGPT,{
     listPhe <- unique(gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
     updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE,
@@ -160,6 +173,7 @@ server <- function(input, output, session) {
                          label = "Gene symbol (filtered)")
   })
   
+  # if filter gene symbol butto is pushed
   observeEvent (input$fGenes,{
     listGenes <- gpt_tP_tG$gene_symbol[ gpt_tP_tG$test_name %in% as.character(input$gpt) ]
     updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE,
@@ -265,9 +279,17 @@ server <- function(input, output, session) {
     tbl
   })
   
+  
+  
+  observeEvent(input$update, {
+    updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
+  })
+  
   # display reactive main table
   output$tableMain <- renderDataTable( {
-    input$update
+    #input$update
+    t = input$refresh_helper
+    
     isolate({
       if(ncol(main_table()) > 0) {
         formatStyle(datatable(main_table(), escape = FALSE, selection = 'none'), 
@@ -284,18 +306,16 @@ server <- function(input, output, session) {
         tabPanel("Population summary",
           dataTableOutput('summary_table')),
         tabPanel("Coverage plots",
-                 fluidRow(
-                   column(4, align="center", plotOutput("violin_population")),
-                   column(8, align="center",
-                          tags$label("Click the plot to go to the gnomAD server."),
-                      tags$a(imageOutput("gnomAD_plot"),
-                             href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")#,
-                      #,
-                      #HTML("<label>&nbsp;</label>")
-                 ))
+          fluidRow(
+            column(4, align="center", plotOutput("violin_population")),
+            column(8, align="center",
+              tags$label("Click the plot to go to the gnomAD server."),
+              tags$a(imageOutput("gnomAD_plot"),
+                     href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")
+          ))
         ),
         tabPanel("Gene panels",
-                 dataTableOutput('GPT_table'))
+          dataTableOutput('GPT_table'))
       ),
       easyClose = TRUE
     )
@@ -369,7 +389,6 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
-#    message("[PLOT] ", ccds2ens[ selCCDS, 2])
     p1
   }
 }
