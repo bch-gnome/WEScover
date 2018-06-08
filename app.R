@@ -150,13 +150,15 @@ server <- function(input, output, session) {
   # if a gene symbol is provided by url
   observe({
     query <- parseQueryString(session$clientData$url_search)
+    message("query")
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
       updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
-    }
-    if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
-      updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 2 )
+    #}
+    #if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
+      message("update! ", input$refresh_helper, " ", myValue$inc)
+      updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
   
@@ -194,7 +196,7 @@ server <- function(input, output, session) {
   }
   
   # list of global values
-  myValue <- reactiveValues(summary_table = NA, GPT_table = NA, 
+  myValue <- reactiveValues(summary_table = NA, GPT_table = NA,
     violon_population = NA, gene = "", ccds="", gnomAD_plot="")
   
   # observer to capture detail buttons in the main table
@@ -288,8 +290,9 @@ server <- function(input, output, session) {
   # display reactive main table
   output$tableMain <- renderDataTable( {
     #input$update
+    message(input$refresh_helper)
     t = input$refresh_helper
-    if(t >= 2 ) {
+    if(t > 0 ) {
       isolate({
         if(ncol(main_table()) > 0) {
           formatStyle(datatable(main_table(), escape = FALSE, selection = 'none'), 
