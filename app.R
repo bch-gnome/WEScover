@@ -38,6 +38,11 @@ ui <- fluidPage(
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
   tags$style(type="text/css", "body {padding-top: 80px;} .selectize-input {height: 45px;} .action-button {height:45px; width:100%;} .center {display: block; margin-left: auto; margin-right: auto}"),
+  #js function to reset a button, variableName is the button name whose value we want to reset
+  tags$script("Shiny.addCustomMessageHandler('reset_detail_button', function(detail_button){
+                Shiny.onInputChange(detail_button, null);
+                });
+                "),
   navbarPage("WEScover", id="mainNav", windowTitle = "WEScover", position = "fixed-top", fluid = TRUE,
     tabPanel("Home",
      absolutePanel( width = "70%", left = "15%", right = "15%",
@@ -46,12 +51,15 @@ ui <- fluidPage(
          hr(),
          p(em('WEScover'), 'helps users to check whether genes of interest could be sufficiently covered in terms of breadth and depth by whole exome sequencing (WES). For each transcript, breadth of coverage data was calculated at 10x, 20x, and 30x read depth from the ', 
            a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 
-           '(N=2,692). A user will be able to minimize the chance of false negatives by selecting a targeted gene panel test for the genes that WES cannot cover well.'),
+           '(N = 2,692). A user will be able to minimize the chance of false negatives by selecting a targeted gene panel test for the genes that WES cannot cover well.'),
          p('Breadth and depth of coverage for ', a(em('NOTCH1'), href = "http://gnomad.broadinstitute.org/gene/ENSG00000148400", target="_blank"),
            ' are illustrated below. For some of the exons, breadth of coverage seems to be sub-optimal that could result in false negative results with WES.'),
          tags$img(src="gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1", style="width:650px;height:300px", class="center"),
+         br(),
          p(em('WEScover'), ' provides detailed coverage information including difference in breadth of coverage between continent-level populatios.'),
+         br(),
          tags$img(src="violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1", style="width:650px;height:300px", class="center"),
+         br(),
          p('Phenotype, genetic test names, or gene symbols can be used to retrieve coverage information in the query window. The output summary helps users to choose WES vs. targeted gene panel testing.')
        )
      )
@@ -149,14 +157,14 @@ server <- function(input, output, session) {
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
-<<<<<<< HEAD
+
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
-=======
+
       updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
     }
     if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
->>>>>>> 8b314d5e275b4f7d7dcf7cae8fa9c44a965dd431
+
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
@@ -249,7 +257,8 @@ server <- function(input, output, session) {
       setProgress(1)
     })
     showModal(modal_main())
-    
+    ##Reset the select_button
+    session$sendCustomMessage(type = 'reset_detail_button', message =  "detail_button")
   })
   
   # create reactive main table
