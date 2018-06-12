@@ -1,4 +1,5 @@
 genes_by_ccds_id <- read_fst('data/genes_by_ccds_id.fst')
+
 summary <- read_fst("data/summary.fst")
 
 getCCDS <- function(geneN, sm) {
