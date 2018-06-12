@@ -8,6 +8,7 @@ library(reshape2)
 library(RColorBrewer)
 library(fst)
 library(data.table)
+library(metafolio)
 setDTthreads(18)
 
 # laod functions
@@ -162,12 +163,11 @@ server <- function(input, output, session) {
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
-<<<<<<< HEAD
 
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
 
-      updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
+      # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
 
     }
     if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
@@ -178,33 +178,33 @@ server <- function(input, output, session) {
       message("update! ", input$refresh_helper, " ", myValue$inc)
 
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
-=======
-      updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = geneS, server = TRUE)
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = input$gene_symbol, server = TRUE)
+      # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = geneS, server = TRUE)
       if(input$refresh_helper %in% c(0,1)) {
         message("update from (RH) ", input$refresh_helper)
         updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
       }
->>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
+
     }
   })
   
   # if clear button is pushed
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
-<<<<<<< HEAD
-    updateSelectizeInput(session, 'gene_symbol', 
-                         choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
-                         label = "Gene symbol")
+
+    # updateSelectizeInput(session, 'gene_symbol', 
+    #                      choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
+    #                      label = "Gene symbol")
     # updateSelectizeInput(session, 'gene_symbol', 
     #                      choices = gene_symbol$gene_symbol, server = TRUE,
     #                      label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
-    updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
-=======
+    # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
+
     updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE, label = "Gene symbol")
->>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
-    updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
+
+    # updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
   
@@ -280,13 +280,10 @@ server <- function(input, output, session) {
       setProgress(1)
     })
     showModal(modal_main())
-<<<<<<< HEAD
 
     ##Reset the select_button
     session$sendCustomMessage(type = 'reset_detail_button', message =  "detail_button")
 
-=======
->>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
     # reset the "check" on the button in the main table
     session$sendCustomMessage(type = 'resetInputValue', message =  "detail_button")
   })
@@ -368,23 +365,25 @@ server <- function(input, output, session) {
                      href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")
           ))
         ),
-        # tabPanel("KS Test",
-        #          fluidPage(
-        #            sidebarLayout(
-        #              sidebarPanel("sidebar panel",
-        #                           selectInput("KS_1", h3("Select box"), 
-        #                           choices = c("AFR","AMR","EAS","EUR","SAS"),
-        #                           selected = "AFR"
-        #                           ),
-        #                           selectInput("KS_2", h3("Select box"), 
-        #                                       choices = c("AFR","AMR","EAS","EUR","SAS"),
-        #                                       selected = "AMR"
-        #                           )
-        #                         ),
-        #              mainPanel("main panel")
-        #            )
-        #          )
-        #        ),
+        tabPanel("KS Test",
+                 fluidPage(
+                   sidebarLayout(
+                     sidebarPanel("sidebar panel",
+                                  selectInput("KS_1", h3("Select box"),
+                                  choices = c("AFR","AMR","EAS","EUR","SAS"),
+                                  selected = "AFR"
+                                  ),
+                                  selectInput("KS_2", h3("Select box"),
+                                              choices = c("AFR","AMR","EAS","EUR","SAS"),
+                                              selected = "AMR"
+                                  )
+                                ),
+                     mainPanel(
+                       plotOutput("KS_plot")
+                     )
+                   )
+                 )
+               ),
         tabPanel("Gene panels",
           dataTableOutput('GPT_table'))
       ),
@@ -408,6 +407,10 @@ server <- function(input, output, session) {
   output$gnomAD_plot <- renderImage({
     myValue$gnomAD_plot
   }, deleteFile = FALSE)
+  
+  output$KS_plot <- renderPlot({
+    createPlot_KS(myValue$gene, myValue$ccds)
+  })
   
   createPlot <- function(gene, selCCDS) {
     message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
@@ -445,7 +448,7 @@ server <- function(input, output, session) {
                                  melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
       
     }
-  
+    
     dta$CCDS <- as.character(dta$CCDS)
     dta$Population <- as.character(dta$Population)
     dta$variable <- as.character(dta$variable)
@@ -461,6 +464,108 @@ server <- function(input, output, session) {
       ylab("Breadth of coverage") + 
       theme(legend.position="bottom", strip.text.x = element_text(size=12), axis.title=element_text(size=12))
     p1
+  }
+  
+  # writing new KS plot in modal window
+  
+  createPlot_KS <- function(gene, selCCDS) {
+    message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
+    selCCDS<-as.character(selCCDS)
+    
+    idx <- 0 
+    if (input$depth_of_coverage == "10x") {
+      load10x(summary)
+      idx <- 2
+      dta <- do.call(rbind, list(melt(AFR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+    }
+    
+    if (input$depth_of_coverage == "20x") {
+      load20x(summary)
+      idx <- 3
+      dta <- do.call(rbind, list(melt(AFR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    if (input$depth_of_coverage == "30x") {
+      load30x(summary)
+      idx <- 4
+      dta <- do.call(rbind, list(melt(AFR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    dta$CCDS <- as.character(dta$CCDS)
+    dta$Population <- as.character(dta$Population)
+    dta$variable <- as.character(dta$variable)
+    dta$value <- as.numeric(dta$value)
+    dta$GeneSymbol <- gene#myValue$gene
+    
+    gg_color_hue <- function(n) {
+      hues = seq(15, 375, length = n + 1)
+      hcl(h = hues, l = 65, c = 100)[1:n]
+    }
+    
+    n = 5
+    cols = gg_color_hue(n)
+
+    pop_1 <- dta[dta$Population==input$KS_1, "value"]
+    colors_1 <-switch(input$KS_1,
+                      "AFR" = cols[1],
+                      "AMR" = cols[2],
+                      "EAS" = cols[3],
+                      "EUR" = cols[4],
+                      "SAS" = cols[5])
+    pop_2 <- dta[dta$Population==input$KS_2, "value"]
+    colors_2 <-switch(input$KS_2,
+                      "AFR" = cols[1],
+                      "AMR" = cols[2],
+                      "EAS" = cols[3],
+                      "EUR" = cols[4],
+                      "SAS" = cols[5])
+    group <- c(rep(input$KS_1, length(pop_1)), rep(input$KS_2, length(pop_2)))
+    # colors <- c(rep(colors_1, length(pop_1)), rep(colors_2, length(pop_2)))
+    
+    dat <- data.frame(KSD = c(pop_1,pop_2), group = group)
+    
+    names(cols) <- levels(dta$group)
+    colScale <- scale_colour_manual(name = "group",values = c(colors_1, colors_2))
+    
+    
+    cdf1 <- ecdf(pop_1)
+    cdf2 <- ecdf(pop_2)
+    
+    minMax <- seq(min(pop_1, pop_2), max(pop_1, pop_2), length.out=length(pop_1)) 
+    x0 <- minMax[which( abs(cdf1(minMax) - cdf2(minMax)) == max(abs(cdf1(minMax) - cdf2(minMax))) )]
+    y0 <- cdf1(x0)
+    y1 <- cdf2(x0)
+    
+    test <- ks.test(pop_1, pop_2, alternative="two.sided", exact = NULL)
+    plot <- ggplot(dat, aes(x = KSD, group = group, color = group))+
+      stat_ecdf(size=1) + colScale +
+      theme_bw() +
+      theme(legend.position ="top") +
+      xlab("Sample") +
+      ylab("ECDF") +
+      #geom_line(size=1) +
+      geom_segment(aes(x = x0[1], y = y0[1], xend = x0[1], yend = y1[1]),
+                   linetype = "dashed", color = "black") +
+      geom_point(aes(x = x0[1] , y= y0[1]), color="black", size=6) +
+      geom_point(aes(x = x0[1] , y= y1[1]), color="black", size=6) +
+      theme_update(plot.title = element_text(hjust = 0.5)) +
+      ggtitle(paste0(selCCDS, "\n","(D = ", signif(test$statistic, 3), ", p-value = ",
+                     format.pval(test$p.val, digits = 3, eps = 0.001), ")"))
+    plot
   }
 }
 
