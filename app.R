@@ -153,16 +153,16 @@ server <- function(input, output, session) {
   # fill with default values
   updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
   updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE)
-  # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
   # if a gene symbol is provided by url
   observe({
     query <- parseQueryString(session$clientData$url_search)
-    message("query")
+    message("query -> ", query[['gene']])
     if (!is.null(query[['gene']]) & length(input$gene_symbol) == 0) {
       geneS <- strsplit(query[['gene']], ",")[[1]]
       updateNavbarPage(session, "mainNav", "Query")
+<<<<<<< HEAD
 
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
@@ -178,12 +178,20 @@ server <- function(input, output, session) {
       message("update! ", input$refresh_helper, " ", myValue$inc)
 
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
+=======
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = geneS, server = TRUE)
+      if(input$refresh_helper %in% c(0,1)) {
+        message("update from (RH) ", input$refresh_helper)
+        updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
+      }
+>>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
     }
   })
   
   # if clear button is pushed
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
+<<<<<<< HEAD
     updateSelectizeInput(session, 'gene_symbol', 
                          choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
                          label = "Gene symbol")
@@ -193,6 +201,9 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
     updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
+=======
+    updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE, label = "Gene symbol")
+>>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
@@ -240,7 +251,6 @@ server <- function(input, output, session) {
       #   createMainTable2(geneS, input$depth_of_coverage, gpt_tP_tG)[,c(1,2,6:10)]
       
       incProgress(0.2, detail = "(Obtaining gene panel tests)")
-      # myValue$GPT_table <<- createGPT(selectedRow, main_table(), gtrM)
       myValue$GPT_table <<- createGPT(selectedRow, main_table(), gpt_tP_tG)
       
       incProgress(0.2, detail = "(Creating violin plot)")
@@ -270,10 +280,13 @@ server <- function(input, output, session) {
       setProgress(1)
     })
     showModal(modal_main())
+<<<<<<< HEAD
 
     ##Reset the select_button
     session$sendCustomMessage(type = 'reset_detail_button', message =  "detail_button")
 
+=======
+>>>>>>> 504f55ae90a05ab135c4b2986b393bbf6b5a95fa
     # reset the "check" on the button in the main table
     session$sendCustomMessage(type = 'resetInputValue', message =  "detail_button")
   })
@@ -305,7 +318,6 @@ server <- function(input, output, session) {
     }
     
     geneS <- unique(geneS)
-    # tbl <- createMainTable2(geneS, input$depth_of_coverage, summary, gtrM, gtrS)
     tbl <- createMainTable2(geneS, input$depth_of_coverage, gpt_tP_tG)
     if(ncol(tbl) > 0) {
       tbl <- tbl[ , c(1:5, 11:13)]
@@ -325,7 +337,7 @@ server <- function(input, output, session) {
   # display reactive main table
   output$tableMain <- renderDataTable( {
     #input$update
-    message(input$refresh_helper)
+    message("RH: ", input$refresh_helper)
     t = input$refresh_helper
     if(t > 0 ) {
       isolate({
@@ -351,6 +363,7 @@ server <- function(input, output, session) {
             column(4, align="center", plotOutput("violin_population")),
             column(8, align="center",
               tags$label("Click the plot to go to the gnomAD server."),
+              tags$br(),
               tags$a(imageOutput("gnomAD_plot"),
                      href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")
           ))
