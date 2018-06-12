@@ -168,15 +168,15 @@ server <- function(input, output, session) {
       # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
 
       updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
-<<<<<<< HEAD
+
     }
     if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
 
-=======
+
     #}
     #if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
       message("update! ", input$refresh_helper, " ", myValue$inc)
->>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
+
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
     }
   })
@@ -184,7 +184,6 @@ server <- function(input, output, session) {
   # if clear button is pushed
   observeEvent (input$clear,{
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
-<<<<<<< HEAD
     updateSelectizeInput(session, 'gene_symbol', 
                          choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE,
                          label = "Gene symbol")
@@ -193,10 +192,8 @@ server <- function(input, output, session) {
     #                      label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
-=======
     updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
->>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
     updateSelectInput(session, "depth_of_coverage", choices = c("10x", "20x", "30x"), selected = "20x")
   })
   
@@ -273,13 +270,12 @@ server <- function(input, output, session) {
       setProgress(1)
     })
     showModal(modal_main())
-<<<<<<< HEAD
+
     ##Reset the select_button
     session$sendCustomMessage(type = 'reset_detail_button', message =  "detail_button")
-=======
+
     # reset the "check" on the button in the main table
     session$sendCustomMessage(type = 'resetInputValue', message =  "detail_button")
->>>>>>> 88befd578f095a5fc1d2e4b3ec6a4230b6725cd7
   })
   
   # create reactive main table
@@ -359,6 +355,23 @@ server <- function(input, output, session) {
                      href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")
           ))
         ),
+        # tabPanel("KS Test",
+        #          fluidPage(
+        #            sidebarLayout(
+        #              sidebarPanel("sidebar panel",
+        #                           selectInput("KS_1", h3("Select box"), 
+        #                           choices = c("AFR","AMR","EAS","EUR","SAS"),
+        #                           selected = "AFR"
+        #                           ),
+        #                           selectInput("KS_2", h3("Select box"), 
+        #                                       choices = c("AFR","AMR","EAS","EUR","SAS"),
+        #                                       selected = "AMR"
+        #                           )
+        #                         ),
+        #              mainPanel("main panel")
+        #            )
+        #          )
+        #        ),
         tabPanel("Gene panels",
           dataTableOutput('GPT_table'))
       ),
