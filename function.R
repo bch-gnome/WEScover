@@ -119,23 +119,27 @@ load30x <- function(summary) {
 
 createGPT <- function(row, main_table, gpt_tP_tG) {
 # createGPT <- function(row, main_table, gtrM) {
-  tbl <- data.frame(
-    A = as.character(main_table[row, 1]),
-    B = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "GTR_accession"],
-    C = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "test_name"],
-    # B = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "AccessionVersion"]),
-    # C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
-    stringsAsFactors = FALSE
-  )
-  createLink <- function(val) {
-    sprintf('<a href="https://www.ncbi.nlm.nih.gov/gtr/tests/%s" target="_blank" class="btn btn-primary">%s</a>',val, val)
+  if (as.character(main_table[row, 1]) %in% as.character(gpt_tP_tG$gene_symbol)) {
+    tbl <- data.frame(
+      A = as.character(main_table[row, 1]),
+      B = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "GTR_accession"],
+      C = gpt_tP_tG[gpt_tP_tG$gene_symbol == as.character(main_table[row, 1]), "test_name"],
+      # B = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "AccessionVersion"]),
+      # C = unique(gtrM[gtrM$GeneSymbol == as.character(main_table[row, 1]), "ObjectName"]),
+      stringsAsFactors = FALSE
+    )
+    createLink <- function(val) {
+      sprintf('<a href="https://www.ncbi.nlm.nih.gov/gtr/tests/%s" target="_blank" class="btn btn-primary">%s</a>',val, val)
+    }
+    tbl$B <- sapply(tbl$B, createLink)
+    
+    colnames(tbl) <- c("Gene Symbol", "GTR Test ID", "Test Name")
+    rownames(tbl) <- seq(nrow(tbl))
+    tbl <- tbl[!duplicated(tbl), ]
+    tbl
+  } else {
+    tbl <- data.frame()
   }
-  tbl$B <- sapply(tbl$B, createLink)
-  
-  colnames(tbl) <- c("Gene Symbol", "GTR Test ID", "Test Name")
-  rownames(tbl) <- seq(nrow(tbl))
-  tbl <- tbl[!duplicated(tbl), ]
-  tbl
 }
 
 # createMainTable2 <- function(geneS, depth, gpt_tP_tG) {

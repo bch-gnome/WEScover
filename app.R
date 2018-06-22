@@ -9,6 +9,7 @@ library(RColorBrewer)
 library(fst)
 library(data.table)
 library(metafolio)
+library(corrplot)
 setDTthreads(18)
 
 # laod functions
@@ -23,11 +24,15 @@ gtrM <- read.fst("data/gtrM.fst")
 gtrS <- read.fst("data/gtrS.fst")
 gpt_tP_tG <- read.fst("data/gpt_tP_tG.fst")
 ccds2ens <- readRDS("data/ccds_ens_map.rds")
+# using comprehensive version of ORPHA data that includes genes not mapped to gpt
+ORPHA <- read.fst("data/new_ORPHA.fst")
 
 # format data
 gpt_tP_tG$GTR_accession <- as.character(gpt_tP_tG$GTR_accession)
 gpt_tP_tG$test_name <- as.character(gpt_tP_tG$test_name)
 gpt_tP_tG$phenotype_name <- as.character(gpt_tP_tG$phenotype_name)
+ORPHA$HPO_term_name <- as.character(ORPHA$HPO_term_name)
+ORPHA$gene_symbol <- as.character(ORPHA$gene_symbol)
 
 setDTthreads(18)
 
@@ -74,17 +79,40 @@ ui <- fluidPage(
       sidebarPanel(
               tags$h2("User input"),
               fluidRow(
+                column(12, 
+                       radioButtons("select_phen", "Select phenotype",
+                                   c("GTR" = "GTR",
+                                     "HPO" = "HPO"),
+                                   inline = TRUE)
+                )
+              ),
+              fluidRow(
                 column(8,
-                  selectizeInput("phen",
-                    label="Phenotype",
-                    choices = NULL,
-                    multiple = TRUE)
+                       selectizeInput("phen",
+                                      label="GTR Phenotype",
+                                      choices = NULL,
+                                      multiple = TRUE)
                 ),
                 column(4,
-                  HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
-                  tags$br(),
-                  actionButton("fGPT", "Filter")#, icon = icon("filter", lib = "glyphicon"))
+                       HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
+                       tags$br(),
+                       actionButton("fGPT", "Filter")#, icon = icon("filter", lib = "glyphicon"))
                 )
+              ),
+              # test input for HPO
+              fluidRow(
+                column(8,
+                       selectizeInput("HPO",
+                                      label="HPO Phenotype",
+                                      choices = NULL,
+                                      multiple = TRUE)
+                ),
+                column(4,
+                       HTML("<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>"),
+                       tags$br(),
+                       actionButton("fGPT2", "Filter")#, icon = icon("filter", lib = "glyphicon"))
+                       # actionButton("fGenes2", "Filter")#, icon = icon("filter", lib = "glyphicon"))
+              )
               ),
               fluidRow(
                 column(8,
@@ -130,7 +158,7 @@ ui <- fluidPage(
                 column(5, actionButton("clear", "Clear inputs", class = "btn-secondary")),
                 column(5, actionButton("update", "Submit query", class = "btn-primary"))
               )
-        ),
+              ),
         mainPanel(
           dataTableOutput('tableMain')
         )
@@ -149,11 +177,28 @@ ui <- fluidPage(
 )
 
 
+
 # Define server logic ----
 server <- function(input, output, session) {
+  
+  observeEvent(input$select_phen, {
+    if (input$select_phen == "GTR") {
+      updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
+      shinyjs::enable("phen")
+      shinyjs::disable("HPO")
+    }
+    if (input$select_phen == "HPO") {
+      updateSelectizeInput(session, 'HPO', choices = sort(unique(ORPHA$HPO_term_name)), server = TRUE)
+      shinyjs::enable("HPO")
+      shinyjs::disable("phen")
+    }
+  })
+  
   # fill with default values
+  updateSelectizeInput(session, 'HPO', choices = sort(unique(ORPHA$HPO_term_name)), server = TRUE)
   updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
   updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE)
+  # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(genes_by_ccds_id$gene_symbol)), server = TRUE)
   updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE)
   
   # if a gene symbol is provided by url
@@ -165,9 +210,7 @@ server <- function(input, output, session) {
       updateNavbarPage(session, "mainNav", "Query")
 
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = query[['gene']], server = TRUE)
-      # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = query[['gene']], server = TRUE)
-
-      # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, selected = geneS, server = TRUE)
+      # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(genes_by_ccds_id$gene_symbol)), selected = query[['gene']], server = TRUE)
 
     }
     if(length(input$gene_symbol) != 0 & input$refresh_helper == 0) {
@@ -178,8 +221,8 @@ server <- function(input, output, session) {
       message("update! ", input$refresh_helper, " ", myValue$inc)
 
       updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
+      # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(genes_by_ccds_id$gene_symbol)), selected = input$gene_symbol, server = TRUE)
       updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = input$gene_symbol, server = TRUE)
-      # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), selected = geneS, server = TRUE)
       if(input$refresh_helper %in% c(0,1)) {
         message("update from (RH) ", input$refresh_helper)
         updateNumericInput( session = session, inputId = 'refresh_helper', value = input$refresh_helper + 1 )
@@ -190,6 +233,7 @@ server <- function(input, output, session) {
   
   # if clear button is pushed
   observeEvent (input$clear,{
+    updateSelectizeInput(session, 'HPO', choices = sort(unique(ORPHA$HPO_term_name)), server = TRUE)
     updateSelectizeInput(session, 'phen', choices = sort(unique(gpt_tP_tG$phenotype_name)), server = TRUE)
 
     # updateSelectizeInput(session, 'gene_symbol', 
@@ -200,8 +244,7 @@ server <- function(input, output, session) {
     #                      label = "Gene symbol")
     updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE,
                          label = "GPT name")
-    # updateSelectizeInput(session, 'gene_symbol', choices = gene_symbol$gene_symbol, server = TRUE, label = "Gene symbol")
-
+    # updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(genes_by_ccds_id$gene_symbol)), server = TRUE, label = "Gene symbol")
     updateSelectizeInput(session, 'gene_symbol', choices = sort(unique(gpt_tP_tG$gene_symbol)), server = TRUE, label = "Gene symbol")
 
     # updateSelectizeInput(session, 'gpt', choices = sort(unique(gpt_tP_tG$test_name)), server = TRUE, label = "GPT name")
@@ -210,19 +253,48 @@ server <- function(input, output, session) {
   
   # if filter GPT button is pushed
   observeEvent (input$fGPT,{
-    listPhe <- unique(
-      gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
-    updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE, label = "GPT name (filtered)")
-    listGenes <- unique(
-      gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
-    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
-  })
+    if (length(input$phen) != 0 & length(input$HPO) == 0) {
+      listPhe <- unique(
+        gpt_tP_tG$test_name[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ] ])
+      updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE, label = "GPT name (filtered)")
   
-  # if filter gene symbol butto is pushed
-  observeEvent (input$fGenes,{
-    listGenes <- gpt_tP_tG$gene_symbol[ gpt_tP_tG$test_name %in% as.character(input$gpt) ]
-    updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+      listGenes <- unique(
+        gpt_tP_tG$gene_symbol[ gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+    }
   })
+  # if filter GPT2 button is pushed
+  
+  observeEvent (input$fGPT2,{
+    if (length(input$phen) == 0 & length(input$HPO) != 0) {
+      listPhe <- unique(
+        ORPHA$test_name[ ORPHA$OrphaNumber_phen %in% ORPHA$OrphaNumber_phen[ ORPHA$HPO_term_name %in% as.character(input$HPO) ] ])
+      updateSelectizeInput(session, 'gpt', choices = sort(listPhe), server = TRUE, label = "GPT name (filtered)")
+  
+      listGenes <- unique(
+        ORPHA$gene_symbol[ ORPHA$OrphaNumber_phen %in% ORPHA$OrphaNumber_phen[ ORPHA$HPO_term_name %in% as.character(input$HPO) ]])
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+    }
+  })
+
+  
+  # if filter genes button is pushed
+  observeEvent (input$fGenes,{
+    if (length(input$phen) != 0 & length(input$HPO) == 0) {
+      listGenes <- gpt_tP_tG$gene_symbol[ gpt_tP_tG$test_name %in% as.character(input$gpt) ]
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+    }
+    if (length(input$phen) == 0 & length(input$HPO) != 0) {
+      listGenes <- ORPHA$gene_symbol[ ORPHA$test_name %in% as.character(input$gpt) ]
+      updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+    }
+  })
+
+  # filter for genes in HPO
+  # observeEvent (input$fGenes2,{
+  #   listGenes <- ORPHA$gene_symbol[ ORPHA$HPO_term_name %in% as.character(input$HPO) ]
+  #   updateSelectizeInput(session, 'gene_symbol', choices = sort(listGenes), server = TRUE, label = "Gene symbol (filtered)")
+  # })
   
   # generator of buttons for the main table
   shinyInput <- function(FUN, len, id, ...) {
@@ -291,6 +363,7 @@ server <- function(input, output, session) {
   # create reactive main table
   main_table <- reactive ({
     geneS <- c()
+    
     if(length(input$phen) != 0) {
       if (length(input$gene_symbol) != 0) {
         geneS <- c(geneS, input$gene_symbol)
@@ -302,12 +375,39 @@ server <- function(input, output, session) {
           gpt_tP_tG$GTR_accession %in% gpt_tP_tG$GTR_accession[ gpt_tP_tG$phenotype_name %in% as.character(input$phen) ]])
         message(length(geneP))
         geneS <- c(geneS, geneP)
+        # including HPO
+      } #else if(length(input$HPO) != 0) {
+       #   geneH <- as.character(unique(ORPHA[ ORPHA$HPO_term_name %in% as.character(input$HPO),"gene_symbol"]))
+       #   message(length(geneH))
+       #   geneS <- c(geneS, geneH)
+       # }
+    }
+    
+    # if statement for HPO
+    
+    if(length(input$HPO) != 0) {
+      if (length(input$gene_symbol) != 0) {
+        geneS <- c(geneS, input$gene_symbol)
+      } else if(length(input$HPO) != 0) {
+           geneH <- as.character(unique(ORPHA[ ORPHA$HPO_term_name %in% as.character(input$HPO),"gene_symbol"]))
+           message(length(geneH))
+           geneS <- c(geneS, geneH)
       }
     }
+    # if (length(input$HPO) != 0) {
+    #   geneH <- as.character(unique(ORPHA[ ORPHA$HPO_term_name %in% as.character(input$HPO),"gene_symbol"]))
+    #   geneS <- c(geneS, geneH)
+    # }
 
     if (length(input$gpt) != 0) {
-      geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
-      geneS <- c(geneS, geneG)
+      if (length(input$phen) != 0 & length(input$HPO) == 0) {
+        geneG <- as.character(unique(gpt_tP_tG[gpt_tP_tG$test_name %in% input$gpt, "gene_symbol"]))
+        geneS <- c(geneS, geneG)
+      }
+      if (length(input$phen) == 0 & length(input$HPO) != 0) {
+        geneG <- as.character(unique(ORPHA[ORPHA$test_name %in% input$gpt, "gene_symbol"]))
+        geneS <- c(geneS, geneG)
+      }
     }
     
     if (length(input$gene_symbol) != 0) {
@@ -368,12 +468,11 @@ server <- function(input, output, session) {
         tabPanel("KS Test",
                  fluidPage(
                    sidebarLayout(
-                     sidebarPanel("sidebar panel",
-                                  selectInput("KS_1", h3("Select box"),
+                     sidebarPanel(selectInput("KS_1", h3("Select Population 1"),
                                   choices = c("AFR","AMR","EAS","EUR","SAS"),
                                   selected = "AFR"
                                   ),
-                                  selectInput("KS_2", h3("Select box"),
+                                  selectInput("KS_2", h3("Select Population 2"),
                                               choices = c("AFR","AMR","EAS","EUR","SAS"),
                                               selected = "AMR"
                                   )
@@ -384,6 +483,17 @@ server <- function(input, output, session) {
                    )
                  )
                ),
+        tabPanel("THSD",
+                 fluidRow(
+                   tags$br(),
+                   tags$br(),
+                 #   column(align = "center",
+                    plotOutput("THSD_plot"), height = "100%", width = "100%")
+               #   )
+        ),
+        # including a panel for Tukey results
+        
+        
         tabPanel("Gene panels",
           dataTableOutput('GPT_table'))
       ),
@@ -410,6 +520,10 @@ server <- function(input, output, session) {
   
   output$KS_plot <- renderPlot({
     createPlot_KS(myValue$gene, myValue$ccds)
+  })
+  
+  output$THSD_plot <- renderPlot({
+    createPlot_THSD(myValue$gene, myValue$ccds)
   })
   
   createPlot <- function(gene, selCCDS) {
@@ -567,10 +681,110 @@ server <- function(input, output, session) {
                      format.pval(test$p.val, digits = 3, eps = 0.001), ")"))
     plot
   }
+  
+  # writing THSD plot
+  
+  createPlot_THSD <- function(gene, selCCDS) {
+    message("[PLOT] Number of CCDS: ", selCCDS, "; Number of genes:", gene )
+    selCCDS<-as.character(selCCDS)
+    
+    idx <- 0 
+    if (input$depth_of_coverage == "10x") {
+      load10x(summary)
+      idx <- 2
+      dta <- do.call(rbind, list(melt(AFR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_10x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+    }
+    
+    if (input$depth_of_coverage == "20x") {
+      load20x(summary)
+      idx <- 3
+      dta <- do.call(rbind, list(melt(AFR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_20x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    if (input$depth_of_coverage == "30x") {
+      load30x(summary)
+      idx <- 4
+      dta <- do.call(rbind, list(melt(AFR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(AMR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(EUR_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol")),
+                                 melt(SAS_30x[selCCDS, ], id.vars = c("CCDS", "Population", "GeneSymbol"))))
+      
+    }
+    
+    dta$CCDS <- as.character(dta$CCDS)
+    dta$Population <- as.character(dta$Population)
+    dta$variable <- as.character(dta$variable)
+    dta$value <- as.numeric(dta$value)
+    dta$GeneSymbol <- gene#myValue$gene
+    
+    dta_ANOVA <- aov(dta$value ~ dta$Population)
+    dta_THSD <- TukeyHSD(dta_ANOVA, ordered = T)
+    
+    dta_ANOVA_Population <- dta_THSD$`dta$Population`
+    diff <- as.numeric(dta_ANOVA_Population[,1])
+    names(diff) <- rownames(dta_ANOVA_Population)
+    p_value <- as.numeric(dta_ANOVA_Population[,4])
+    names(p_value) <- rownames(dta_ANOVA_Population)
+
+    z <- matrix(
+      c(0, diff["AFR-AMR"],diff["AFR-EAS"],diff["AFR-EUR"], diff["AFR-SAS"],
+        diff["AMR-AFR"], 0, diff["AMR-EAS"],diff["AMR-EUR"],diff["AMR-SAS"],
+        diff["EAS-AFR"], diff["EAS-AMR"], 0, diff["EAS-EUR"], diff["EAS-SAS"],
+        diff["EUR-AFR"], diff["EUR-AMR"], diff["EUR-EAS"], 0, diff["EUR-SAS"],
+        diff["SAS-AFR"], diff["SAS-AMR"], diff["SAS-EAS"], diff["SAS-EUR"], 0),
+      byrow = T,
+      ncol = 5,
+      nrow = 5,
+      dimnames = list(c("AFR", "AMR", "EAS", "EUR", "SAS"),
+                      c("AFR", "AMR", "EAS", "EUR", "SAS"))
+    )
+    
+    z2 <- matrix(
+      c(1, p_value["AFR-AMR"],p_value["AFR-EAS"],p_value["AFR-EUR"], p_value["AFR-SAS"],
+        p_value["AMR-AFR"], 1, p_value["AMR-EAS"],p_value["AMR-EUR"],p_value["AMR-SAS"],
+        p_value["EAS-AFR"], p_value["EAS-AMR"], 1, p_value["EAS-EUR"], p_value["EAS-SAS"],
+        p_value["EUR-AFR"], p_value["EUR-AMR"], p_value["EUR-EAS"], 1, p_value["EUR-SAS"],
+        p_value["SAS-AFR"], p_value["SAS-AMR"], p_value["SAS-EAS"], p_value["SAS-EUR"], 1),
+      byrow = T,
+      ncol = 5,
+      nrow = 5,
+      dimnames = list(c("AFR", "AMR", "EAS", "EUR", "SAS"),
+                      c("AFR", "AMR", "EAS", "EUR", "SAS"))
+    )
+
+    for (i in 1:nrow(z)) {
+      for (j in 1:ncol(z)) {
+        if (is.na(z[i,j])) {
+          z[i,j] <- as.numeric(diff[paste0(rownames(z)[i],"-",colnames(z)[j])])
+          if (is.na(z[i,j])) {
+            z[i,j] <- as.numeric(diff[paste0(colnames(z)[j],"-",rownames(z)[i])])
+          }
+          z2[i,j] <- as.numeric(p_value[paste0(rownames(z2)[i],"-",colnames(z2)[j])])
+          if (is.na(z2[i,j])) {
+            z2[i,j] <- as.numeric(p_value[paste0(colnames(z2)[j],"-",rownames(z2)[i])])
+          }
+        }
+      }
+    }
+    
+par(mfrow=c(1,2))
+#par(mar=c(5,4,8,2))
+corrplot(z, method="color",is.corr = F, col = brewer.pal(n=5, name="Blues"), type = "lower", title = "Difference of means",mar=c(0,0,1,0))
+corrplot(z2, method="color",is.corr = F, col = brewer.pal(n=5,name="Blues"), type = "lower", title = "p-value", mar = c(0,0,1,0))
+par(mfrow=c(1,1))
+
+  }
 }
-
-
-
 
 # Run the app ----
 shinyApp(ui = ui, server = server)
