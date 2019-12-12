@@ -8,7 +8,7 @@ library(reshape2)
 library(RColorBrewer)
 library(fst)
 library(data.table)
-library(metafolio)
+#library(metafolio)
 library(corrplot)
 setDTthreads(18)
 
