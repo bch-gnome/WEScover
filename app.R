@@ -62,7 +62,7 @@ ui <- fluidPage(
          p(em('WEScover'), 'helps users to check whether genes of interest could be sufficiently covered in terms of breadth and depth by whole exome sequencing (WES). For each transcript, breadth of coverage data was calculated at 10x, 20x, and 30x read depth from the ', 
            a("1000 Genomes Project (1KGP)", href = "http://www.internationalgenome.org/", target="_blank"), 
            '(N = 2,692). A user will be able to minimize the chance of false negatives by selecting a targeted gene panel test for the genes that WES cannot cover well.'),
-         p('Breadth and depth of coverage for ', a(em('NOTCH1'), href = "http://gnomad.broadinstitute.org/gene/ENSG00000148400?dataset=gnomad_r3", target="_blank"),
+         p('Breadth and depth of coverage for ', a(em('NOTCH1'), href = "http://gnomad.broadinstitute.org/gene/ENSG00000148400", target="_blank"),
            ' are illustrated below. For some of the exons, breadth of coverage seems to be sub-optimal that could result in false negative results with WES.'),
          tags$img(src="gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1", style="width:650px;height:300px", class="center"),
          br(),
@@ -462,8 +462,7 @@ server <- function(input, output, session) {
               tags$label("Click the plot to go to the gnomAD server."),
               tags$br(),
               tags$a(imageOutput("gnomAD_plot"),
-                     href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2],
-                                 "?dataset=gnomad_r3"), target="_blank")
+                     href=paste0("http://gnomad.broadinstitute.org/gene/", ccds2ens[as.character(myValue$ccds), 2]), target="_blank")
           ))
         ),
         tabPanel("KS Test",
