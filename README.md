@@ -1,3 +1,5 @@
 # WEScover
 
 <i>WEScover</i> (https://tom.tch.harvard.edu/shinyapps/WEScover/) is a novel web application that provides an interface for discovering breadth and depth of coverage across population scale WES datasets, searching either by phenotype, by targeted gene panels and by genes. Moreover, the application shows metrics from the Genome Aggregation Database (gnomAD) to provide gene-centric view on breadth of coverage. Through the efficent querying of genes and phenotypes for exome coverage of associated exons, <i>WEScover</i> provides recommendations for gene panel tests of genes that are not well covered by whole exome sequencing.
+
+Due to the size of the data used to run the application, all supporting files are available for download under the `Data` tab of <i>WEScover</i> for users who wish to run the application locally. Files include breadth of coverage data by continent-level populations from 1000 Genomes Project, global exome coverage plots in gnomAD, and other associated tables.
