@@ -37,7 +37,7 @@ rsconnect/
 .Rproj.user
 
 
-# Added to do not include data and coverage_plots in teh repository
+# Added to do not include data and coverage_plots in the repository
 data/
 coverage_plots/
 */downloads/
