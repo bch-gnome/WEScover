@@ -1,6 +1,6 @@
-genes_by_ccds_id <- read_fst('data/genes_by_ccds_id.fst')
+#genes_by_ccds_id <- read_fst('data/genes_by_ccds_id.fst')
 
-summary <- read_fst("data/summary.fst")
+#summary <- read_fst("data/summary.fst")
 
 getCCDS <- function(geneN, sm) {
   #message("getCCDS - ", paste(geneN, collapse = ", "))
@@ -143,25 +143,26 @@ createGPT <- function(row, main_table, gpt_tP_tG) {
 }
 
 # createMainTable2 <- function(geneS, depth, gpt_tP_tG) {
-createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
+# createMainTable2 <- function(geneS, depth, summary, gtrM, gtrS) {
+createMainTable2 <- function(geneS, dp, summary, assembly) {
+  library(dplyr)
+  
   if (length(geneS) > 0) {
-    if(depth == "10x") {
-      colS <- c("gene_symbol", "ccds_id", "global_mean_10x", "global_min_10x", "global_max_10x", "AFR_mean_10x", "AMR_mean_10x", "EAS_mean_10x",
-                "EUR_mean_10x", "SAS_mean_10x", "F_statistic_10x","p_unadj_10x","p_adj_10x")
-    } else if(depth == "20x") {
-      colS <- c("gene_symbol", "ccds_id", "global_mean_20x", "global_min_20x", "global_max_20x","AFR_mean_20x", "AMR_mean_20x", "EAS_mean_20x",
-              "EUR_mean_20x", "SAS_mean_20x","F_statistic_20x","p_unadj_20x","p_adj_20x")
-    } else {
-      colS <- c("gene_symbol", "ccds_id", "global_mean_30x","global_min_30x", "global_max_30x", "AFR_mean_30x", "AMR_mean_30x", "EAS_mean_30x",
-                "EUR_mean_30x", "SAS_mean_30x","F_statistic_30x","p_unadj_30x","p_adj_30x")
-    }
-    xx <- genes_by_ccds_id[genes_by_ccds_id$gene_symbol %in% geneS, colS]
+    tmp <- filter(summary, gene_symbol %in% geneS, depth == dp, ver==assembly)
+    
+    xx <- reshape2::dcast(tmp, ccds_id + gene_symbol ~ variable, value.var = 'value')
+    xx <- xx[,c("gene_symbol","ccds_id","global_mean","global_min","global_max","AFR_mean","AMR_mean","EAS_mean","EUR_mean","SAS_mean","F_statistic","p_unadj","p_adj")]
     xx <- xx[order(xx[, 3]), ]
-    colnames(xx) <- c("Gene Symbol", "CCDS", "Global coverage (mean, %)", "Global coverage (min, %)", "Global coverage (max, %)", "AFR (%)", 
+    
+    colnames(xx) <- c("Gene Symbol", "CCDS ID", "Global coverage (mean, %)", "Global coverage (min, %)", "Global coverage (max, %)", "AFR (mean, %)", 
                       "AMR (%)", "EAS (%)", "EUR (%)", "SAS (%)", "ANOVA F-statistic",
                       "Raw P-Value","Adj. P-Value")
     rownames(xx) <- seq(nrow(xx))
-    colnames(genes_by_ccds_id)
+    #colnames(genes_by_ccds_id)
+    for (ii in 3:10) {
+      xx[,ii] <- round(xx[,ii] * 100.0, digits=2)
+    }
+    xx[,11] <- round(xx[,11], digits=2)
     xx[,12] <- format.pval(xx[,12], digits = 3, eps = 0.001)
     xx[,13] <- format.pval(xx[,13], digits = 3, eps = 0.001)
     xx
