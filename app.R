@@ -70,11 +70,11 @@ ui <- fluidPage(
            '(N = 2,504). A user will be able to minimize the chance of false negatives by selecting a targeted gene panel test for the genes that WES cannot cover well.'),
          p('Breadth and depth of coverage for ', a(em('NOTCH1'), href = "http://gnomad.broadinstitute.org/gene/ENSG00000148400", target="_blank"),
            ' are illustrated below. For some of the exons, breadth of coverage seems to be sub-optimal that could result in false negative results with WES.'),
-         tags$img(src="gnomAD_notch1.png", alt = "Coverage from gnomAD project for NOTCH1", style="width:650px;height:300px", class="center"),
+         tags$img(src=paste0("gnomAD_notch1.png?v=", as.numeric(Sys.time())), alt = "Coverage from gnomAD project for NOTCH1", style="width:650px;height:300px", class="center"),
          br(),
          p(em('WEScover'), ' provides detailed coverage information including difference in breadth of coverage between continent-level populatios.'),
          br(),
-         tags$img(src="violin_notch1.png", alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1", style="width:650px;height:300px", class="center"),
+         tags$img(src=paste0("violin_notch1.png?v=", as.numeric(Sys.time())), alt = "Contintental population breath of coverage violin plot for CCDS43905.1/NOTCH1", style="width:650px;height:300px", class="center"),
          br(),
          p('Phenotype, genetic test names, or gene symbols can be used to retrieve coverage information in the query window. The output summary helps users to choose WES vs. targeted gene panel testing.')
        )
@@ -186,7 +186,7 @@ ui <- fluidPage(
     ),
     tabPanel("Data",
       includeHTML("data.html"),
-      hidden( 
+      hidden(
         numericInput( inputId = 'refresh_helper', label = 'refresh_helper', value = 0 ) 
       )
     )
@@ -730,10 +730,10 @@ server <- function(input, output, session) {
 
     message("[gnomad] plot2 -- ", Sys.time())
     if (length(selected_tx) < 5) {
-      ((pp$coverage_plot + ylab("Fraction of individuals with coverage \nover X")) / pp$tx_structure / ll) +
+      ((pp$coverage_plot + ylab("Fraction of individuals with coverage \nover X") + theme(axis.text = element_text(size=12))) / pp$tx_structure / ll) +
         plot_layout(heights = c(0.7, 0.25, 0.05)) + plot_annotation(title = sprintf("gnomAD exome coverage for %s", gene))
     } else {
-      ((pp$coverage_plot + ylab("Fraction of individuals with coverage \nover X")) / pp$tx_structure / ll) +
+      ((pp$coverage_plot + ylab("Fraction of individuals with coverage \nover X") + theme(axis.text = element_text(size=12))) / pp$tx_structure / ll) +
         plot_layout(heights = c(0.6, 0.35, 0.05)) + plot_annotation(title = sprintf("gnomAD exome coverage for %s", gene))
     }
   }
