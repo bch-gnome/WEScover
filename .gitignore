@@ -36,11 +36,5 @@ vignettes/*.pdf
 rsconnect/
 .Rproj.user
 
-
-# Added to do not include data and coverage_plots in the repository
-data/
-coverage_plots/
-*/downloads/
-
 # Not include DS
 .DS_Store
