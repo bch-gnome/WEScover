@@ -13,21 +13,6 @@ bb$variable<-as.character(bb$variable)
 xx<-inner_join(x=aa[,c("ccds_id","gene_symbol","depth","kgp")], y=bb, by=c("ccds_id"="ccds_id", "depth" = "variable"))
 xx$depth<-factor(xx$depth, levels = c("5x","10x","15x","20x","25x","30x","50x","100x"), labels = c("5x","10x","15x","20x","25x","30x","50x","100x"))
 
-
-library(gridExtra)
-library(patchwork)
-png(file="data/kgp_vs_gnomad.png", width = 6.5, height = 9, units = "in", res = 300)
-grid.arrange(
-  ggplot(filter(xx, depth %in% c("5x","10x"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
-  ggplot(filter(xx, depth %in% c("15x","20x"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
-  ggplot(filter(xx, depth %in% c("25x","30x"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
-  ggplot(filter(xx, depth %in% c("50x","100x"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
-  nrow=4,
-  left = "Mean fraction of gnomAD exomes over X",
-  bottom = "Mean breadth of coverage across 1000 Genomes exomes"
-)
-dev.off()
-
 cor.test(xx$kgp[ xx$depth=="5x" ], xx$gnomad[ xx$depth == "5x"], method = "spearman") # 0.79
 cor.test(xx$kgp[ xx$depth=="10x" ], xx$gnomad[ xx$depth == "10x"], method = "spearman") # 0.78
 cor.test(xx$kgp[ xx$depth=="15x" ], xx$gnomad[ xx$depth == "15x"], method = "spearman") # 0.76
@@ -45,6 +30,24 @@ cor.test(xx$kgp[ xx$depth=="25x" ], xx$gnomad[ xx$depth == "25x"], method = "pea
 cor.test(xx$kgp[ xx$depth=="30x" ], xx$gnomad[ xx$depth == "30x"], method = "pearson") # 0.79
 cor.test(xx$kgp[ xx$depth=="50x" ], xx$gnomad[ xx$depth == "50x"], method = "pearson") # 0.63
 cor.test(xx$kgp[ xx$depth=="100x" ], xx$gnomad[ xx$depth == "100x"], method = "pearson") # 0.36
+
+xx$depth<-factor(xx$depth, levels = c("5x","10x","15x","20x","25x","30x","50x","100x"), labels = c("5x (r=0.86)","10x (r=0.87)","15x (r=0.87)","20x (r=0.86)","25x (r=0.83)","30x (r=0.79)","50x (r=0.63)","100x (r=0.36)"))
+
+library(gridExtra)
+library(patchwork)
+png(file="data/kgp_vs_gnomad.png", width = 6.5, height = 9, units = "in", res = 300)
+grid.arrange(
+  ggplot(filter(xx, depth %in% c("5x (r=0.86)","10x (r=0.87)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
+  ggplot(filter(xx, depth %in% c("15x (r=0.87)","20x (r=0.86)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
+  ggplot(filter(xx, depth %in% c("25x (r=0.83)","30x (r=0.79)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
+  ggplot(filter(xx, depth %in% c("50x (r=0.63)","100x (r=0.36)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
+  nrow=4,
+  left = "Mean fraction of gnomAD exomes over X",
+  bottom = "Mean breadth of coverage across 1000 Genomes exomes"
+)
+dev.off()
+
+
 
 
 ## 2. Distribution of global mean breadth of coverage 
