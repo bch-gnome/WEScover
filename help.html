@@ -10,33 +10,33 @@ Specific questions regarding the use of our website, data generation and technic
 <p>WEScover provides an interface where users can search genes of interest according to  phenotypes, targeted gene panel tests, or gene symbols to check for breadth of  coverage across whole exome sequencing (WES) datasets. Breadth of coverage refers to the proportion of gene that is covered at a minimum per-site read depth (e.g., x10, x20 or x30), the average number of times a given region has been sequenced by independent reads. Breadth of coverage data were calculated for each gene from exomes in the 1000 Genomes Project (1KGP) mapped to the human reference genome GRCh38. Users may check for genes related to phenotype of interest and determine whether they could be comprehensively covered by WES instead of targeted gene panel testing. Conversely, if candidate genes have a mean breadth of coverage lower than 95% in population scale WES datasets then targeted gene panel testing should be considered to minimize potential false negatives. This user guide provides an overview of WEScover.</p>
 <br>
 
-<img src="help_1.png" width="650px" height="450px" class="center">
+<img src="help_1.png?v=1" width="650px" height="450px" class="center">
   
   <h3>3. Using the <a href="https://www.ncbi.nlm.nih.gov/gtr/" target="_blank">Genetic Testing Registry</a> to identify targeted gene panel tests and candidate genes.</h3>
 
   <p>As as example, we illustrate how the Genetic Testing Registry (GTR) can be used to identify list of genetic tests for nonalcoholic fatty liver disease (NAFLD).  First, the user must go to the <a href="https://www.ncbi.nlm.nih.gov/gtr/" target="_blank">GTR website</a> and query for conditions and/or phenotypes of interest, in this case NAFLD as shown in the figure below.</p>
 <br>
-<img src="help_2.png" width="650px" height="180px" class="center">
+<img src="help_2.png?v=1" width="650px" height="180px" class="center">
 <p>This search will bring the user to its phenotype entry in GTR. The panels that may be used for this phenotype may be found by clicking the first link in the “Available tests” section. A table with a list of test names will be returned, and clicking on the <i>Genes and analytes</i> option will show genes included in these gene panel test (GPT).</p>
 <br>
-<img src="help_3.png" width="700px" height="400px" class="center">
+<img src="help_3.png?v=1" width="700px" height="400px" class="center">
 <p>PNPLA3 is the gene associated with NAFLD and five GTR registered genetic testings. Before deciding whether to recommend WES or genetic testing panels, users may check breadth of coverage of PNPLA3 and decide whether it is comprehensively covered by WES.</p>
 <br>
-<img src="help_4.png" width="650px" height="400px" class="center">
+<img src="help_4.png?v=1" width="650px" height="400px" class="center">
 
 <h3>4. Using WEScover</h3>
 <br>
 <h4>4.1.User input</h4>
 
-<img src="input_1.png" width="623px" height="767px" class="center">
+<img src="input_1.png?v=1" width="623px" height="767px" class="center">
 
 <p>In the <i>User input</i> panel, queries can be made by the phenotypes (with the names of gene panel tests (GPT) for the phenotype), or gene symbols. Users will be prompted with an autocompleted list of valid values upon clicking each of text area, so that users can quickly navigate and find their search terms. In the interest of speed, however, only a limited number of items are available in the autocomplete list. Even if the intended term does not appear in the beginning, continued typing will make the matching term appear eventually. Searches can be initiated from phenotypes (or disease conditions) that users want to test for, either as phenotypes in GTR (select <b>Genetic Testing Registry (GTR)</b> on the top) or the standardized terms in <a href="https://hpo.jax.org/app/" target="_blank">Human Phenotype Ontology</a> (HPO) (select <b>Human Phenotype Ontology (HPO)</b> on the top).</p>
 
-<img src="input_2.png" width="623px" height="296px" class="center">
+<img src="input_2.png?v=1" width="623px" height="296px" class="center">
 
 <p>Choosing the phenotype of interest and pressing the filter button next to phenotypes will search the database for all gene panel tests related to the given phenotype, which may be seen in the autocomplete list upon clicking <b>GPT name</b>. The filter button next to it will return all genes that are targeted by the queried tests when <b>Gene symbol</b> is clicked. Next, <b>Depth of coverage</b> at which breadth of coverage will be investigated is to be chosen from 5x, 10x, 15x, 20x, 25x, 30x, 50x, or 100x (the default is set to 20x). Finally, users need to select the <b>version of human reference genome assembly</b> by which exomes were processed: GRCh38 (hg38) or GRCh37 (b37/hg19). </p>
 
-<img src="input_3.png" width="623px" height="765px" class="center">
+<img src="input_3.png?v=1" width="623px" height="765px" class="center">
 
 <p>Alternatively, users can start querying individual gene(s) of interest without specifying specific phenotypes.</p>
 
@@ -47,7 +47,7 @@ Users need to click <b>Clear inputs</b> to reset all selected inputs and start o
 <h4>4.2. Table</h4>
 
 <p>Breadth of coverage is reported for the exons of queried genes by their Consensus Coding Sequence identifier (CCDS ID). Clicking <b>Submit query</b> generates a table shown below with the following columns:</p>
-<img src="result.png" width="1266px" height="206px" class="center">
+<img src="result.png?v=1" width="1266px" height="206px" class="center">
 <ul>
 <li><b>Gene symbol</b>: Official symbol for the gene by <a href = "https://www.genenames.org/" target="_blank">HUGO Gene Nomenclature Committee (HGNC)</a>.</li>
 <li><b>CCDS ID</b> is the unique accession identifier in the CCDS Project for the exon of the gene.</li>
@@ -63,11 +63,11 @@ Users need to click <b>Clear inputs</b> to reset all selected inputs and start o
 
 <p><b>Per-population summary</b> reports the mean breadth of coverage for each CCDS ID by each of the five population groups in 1KGP: African (AFR), American (AMR), East Asian (EAS), European (EUR), and South Asian (SAS). This information may be used to highlight differences in coverage between different populations. For example, exons that are comprehensively covered by WES in Europeans may have a lower mean breadth of coverage in another ancestry, suggesting the use of gene panels instead (especially for non-European).</p>
 
-<img src="detail_1.png" width="1182px" height="301px" class="center">
+<img src="detail_1.png?v=1" width="1182px" height="301px" class="center">
 
 <p><b>Coverage plots</b> shows two plots: the breadth of coverage distribution and coverage metric across genomic loci for the gene. On the left, a violin plot shows the breadth of coverage distribution by each population group. The black horizontal line in the plot marks the breadth of coverage from exomes in the Genome Aggregation Database (gnomAD) as a global estimate from large-scale data (125,748 exomes in the release 2.1).</p>
 
-<img src="detail_2.png" width="1182px" height="547px" class="center">
+<img src="detail_2.png?v=1" width="1182px" height="547px" class="center">
 
 <p>The second plot shows coverage metric (from exomes in gnomAD browser) over genomic positions in the selected gene for the hg19 reference genome. The plot consists of two parts: the coverage metric over genomic positions (top) and exons and transcripts in the gene (bottom). The coverage metric is defined as the proportion of exomes in the gnomAD (y-axis) which achieved the target depth of coverage (5x, 10x, 15x, 20x, 25x, 30x, 50x, or 100x) at the given locus (x-axis). The coverage metrics at different target depths are represented by different colors: 5x (red), 10x (dark orange), 15x (orange), 20x (yellow), 25x (light green), 30x (green), 50x (Turquoise), and 100x (blue).</p>
 
@@ -75,15 +75,15 @@ Users need to click <b>Clear inputs</b> to reset all selected inputs and start o
 
 <p><b>Comparison of ditribution</b> allows users to visualize and to compare cumulative distribution (with Kolmogorov–Smirnov test) for breadth of coverage between pair of populations. Once the pair of population is specified on the left panel, the right part will be updated with the corresponding cummulative distributions. Two black dots connected with dashed line shows the point where the gap between two distribution is the largest. The D-statistics and p-value from Kolmogorov-Smirnov test are shown above the plot.</p>
 
-<img src="detail_3.png" width="1182px" height="547px" class="center">
+<img src="detail_3.png?v=1" width="1182px" height="547px" class="center">
 
 <p><b>Comaprison of means</b> shows the pairwise differences between means of breadth of coverage using the Tukey's Honest Significant Difference test. The left triangular plot shows the estimated pairwise differences of means. The right plot shows the p-values from the significant difference test.
 
-<img src="detail_4.png" width="1182px" height="588px" class="center">
+<img src="detail_4.png?v=1" width="1182px" height="588px" class="center">
 
 <p><b>Tests in GTR for the gene</b> provides a list of all gene panel tests registered in GTR that involves the selected gene. Each panel is listed by its unique accession version and provides a hyperlink to its entry in GTR when clicked. Given all genes reported by WEScover to be poorly covered by WES, users may browse these panels and read their entries in GTR to learn how to gain access to these tests.</p>
 
-<img src="detail_5.png" width="1182px" height="386px" class="center">
+<img src="detail_5.png?v=1" width="1182px" height="386px" class="center">
 
 <h3>5. References</h3>
   <p>Chang, W., Cheng, J., Allaire, J.J., Xie, J. and McPherson, J. (2017). shiny: Web Application Framework for R. R package version 1.0.5. <a href="https://CRAN.R-project.org/package=shiny" target="_blank">https://CRAN.R-project.org/package=shiny</a>.
