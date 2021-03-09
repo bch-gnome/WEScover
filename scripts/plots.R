@@ -42,7 +42,7 @@ grid.arrange(
   ggplot(filter(xx, depth %in% c("25x (r=0.83)","30x (r=0.79)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
   ggplot(filter(xx, depth %in% c("50x (r=0.63)","100x (r=0.36)"))) + geom_point(aes(x=kgp, y=gnomad), size=1) + geom_abline(slope = 1, intercept = 0, col="red") + scale_x_continuous(limits=c(0,1)) + scale_y_continuous(limits=c(0,1)) + facet_grid(.~depth) + xlab('') + ylab(''),
   nrow=4,
-  left = "Mean fraction of gnomAD exomes over X",
+  left = textGrob(expression("Mean fraction of gnomAD exomes over "*italic(X)), rot=90),
   bottom = "Mean breadth of coverage across 1000 Genomes exomes"
 )
 dev.off()
