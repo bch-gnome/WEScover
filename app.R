@@ -181,15 +181,13 @@ ui <- fluidPage(
         )
       )
     ),
-    tabPanel("Help",
-      includeHTML("help.html")
-    ),
     tabPanel("Data",
       includeHTML("data.html"),
       hidden(
         numericInput( inputId = 'refresh_helper', label = 'refresh_helper', value = 0 ) 
       )
-    )
+    ),
+    tabPanel(title=HTML("</a></li><li><a href='https://bch-gnome.github.io/wescover_doc/master/' target='_blank'>Help")) ## workaround for linking help page
   )
 )
 
