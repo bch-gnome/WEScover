@@ -38,3 +38,6 @@ rsconnect/
 
 # Not include DS
 .DS_Store
+
+# google-analytics id/script file
+google_analytics.html

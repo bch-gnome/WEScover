@@ -47,6 +47,7 @@ ui <- fluidPage(
   useShinyjs(),
   theme = shinytheme("flatly"),
   tags$head(tags$style(".modal-dialog{min-width:1200px}")),
+  tags$head(includeHTML(("google_analytics.html"))),
   ## javascript required to clean the 'check' of detail buttons in main table
   tags$script("
       Shiny.addCustomMessageHandler('resetInputValue', function(variableName){
